@@ -237,9 +237,9 @@ offset_bottom = -16.0
 grow_vertical = 0
 mouse_filter = 2
 theme_override_font_sizes/font_size = 15
-text = "LMB - grab / drop     RMB - throw
-E - start dish machine (look at the big box)
-WASD move, Shift sprint, Space jump, Esc release mouse"
+text = "LMB / R1 - grab / drop     RMB / L1 - throw
+E / Square - start dish machine
+WASD or left stick move, right stick look, Shift/L3 sprint, Space/Cross jump, Esc release mouse"
 
 [node name="EndOverlay" type="ColorRect" parent="HUD/Root"]
 visible = false

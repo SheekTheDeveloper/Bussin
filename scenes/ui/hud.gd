@@ -34,6 +34,7 @@ func _refresh_counts() -> void:
 func _on_shift_ended(success: bool) -> void:
 	end_overlay.visible = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	($Root/EndOverlay/Center/VBox/MenuButton as Button).grab_focus()
 	if success:
 		end_label.text = "SHIFT COMPLETE"
 		end_label.modulate = Color(0.5, 1.0, 0.6)

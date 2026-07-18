@@ -8,6 +8,7 @@ const WALK_SPEED := 4.5
 const SPRINT_SPEED := 6.5
 const JUMP_VELOCITY := 4.2
 const MOUSE_SENSITIVITY := 0.002
+const STICK_LOOK_SPEED := 2.8  # rad/s at full right-stick deflection
 const THROW_FORCE := 6.5
 const GRAB_RANGE := 3.0
 
@@ -41,7 +42,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		head.rotate_x(-event.relative.y * MOUSE_SENSITIVITY)
 		head.rotation.x = clampf(head.rotation.x, -1.4, 1.4)
 	elif event.is_action_pressed("grab"):
-		if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
+		# A mouse click while the cursor is free just recaptures it;
+		# controller grab (R1) always grabs.
+		if event is InputEventMouseButton and Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 		else:
 			_send_grab_or_drop()
@@ -55,6 +58,11 @@ func _unhandled_input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
 	if not is_multiplayer_authority():
 		return
+	var look := Input.get_vector("look_left", "look_right", "look_up", "look_down")
+	if look != Vector2.ZERO:
+		rotate_y(-look.x * STICK_LOOK_SPEED * delta)
+		head.rotate_x(-look.y * STICK_LOOK_SPEED * delta)
+		head.rotation.x = clampf(head.rotation.x, -1.4, 1.4)
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 	elif Input.is_action_just_pressed("jump"):
