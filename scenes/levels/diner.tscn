@@ -1,9 +1,11 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scenes/levels/diner.gd" id="1_diner"]
 [ext_resource type="PackedScene" path="res://scenes/props/table.tscn" id="2_table"]
 [ext_resource type="PackedScene" path="res://scenes/props/dish.tscn" id="3_dish"]
-[ext_resource type="PackedScene" path="res://scenes/props/dish_pit.tscn" id="4_pit"]
+[ext_resource type="PackedScene" path="res://scenes/props/dirty_counter.tscn" id="4_dirty"]
+[ext_resource type="PackedScene" path="res://scenes/props/dish_machine.tscn" id="6_machine"]
+[ext_resource type="PackedScene" path="res://scenes/props/clean_counter.tscn" id="7_clean"]
 [ext_resource type="Script" path="res://scenes/ui/hud.gd" id="5_hud"]
 
 [sub_resource type="Environment" id="Environment_diner"]
@@ -156,8 +158,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.65, 0.86, 1.5)
 [node name="Dish12" parent="Dishes" instance=ExtResource("3_dish")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.35, 0.86, 1.5)
 
-[node name="DishPit" parent="." instance=ExtResource("4_pit")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
+[node name="DirtyCounter" parent="." instance=ExtResource("4_dirty")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0, -2.7)
+
+[node name="DishMachine" parent="." instance=ExtResource("6_machine")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 9.35, 0, 0)
+output_counter_path = NodePath("../CleanCounter")
+
+[node name="CleanCounter" parent="." instance=ExtResource("7_clean")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0, 2.7)
 
 [node name="SpawnPoints" type="Node3D" parent="."]
 
