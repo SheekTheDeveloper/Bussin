@@ -1,0 +1,77 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scenes/props/dish_pit.gd" id="1_pit"]
+[ext_resource type="Script" path="res://scenes/props/dish_pit_machine.gd" id="2_machine"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_steel"]
+albedo_color = Color(0.62, 0.65, 0.68, 1)
+metallic = 0.6
+roughness = 0.35
+
+[sub_resource type="BoxMesh" id="BoxMesh_counter"]
+material = SubResource("StandardMaterial3D_steel")
+size = Vector3(1.2, 0.9, 3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_counter"]
+size = Vector3(1.2, 0.9, 3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_zone"]
+size = Vector3(1.2, 1, 3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_machine"]
+size = Vector3(1.1, 1.5, 1.1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_machine"]
+size = Vector3(1.1, 1.5, 1.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_shelf"]
+material = SubResource("StandardMaterial3D_steel")
+size = Vector3(1.2, 0.08, 1.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_shelf"]
+size = Vector3(1.2, 0.08, 1.6)
+
+[node name="DishPit" type="Node3D"]
+script = ExtResource("1_pit")
+
+[node name="Counter" type="StaticBody3D" parent="."]
+
+[node name="Mesh" type="MeshInstance3D" parent="Counter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("BoxMesh_counter")
+
+[node name="Shape" type="CollisionShape3D" parent="Counter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+shape = SubResource("BoxShape3D_counter")
+
+[node name="DropZone" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+
+[node name="Shape" type="CollisionShape3D" parent="DropZone"]
+shape = SubResource("BoxShape3D_zone")
+
+[node name="Machine" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.2)
+script = ExtResource("2_machine")
+
+[node name="Mesh" type="MeshInstance3D" parent="Machine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+mesh = SubResource("BoxMesh_machine")
+
+[node name="Shape" type="CollisionShape3D" parent="Machine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+shape = SubResource("BoxShape3D_machine")
+
+[node name="Shelf" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.4)
+
+[node name="Mesh" type="MeshInstance3D" parent="Shelf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+mesh = SubResource("BoxMesh_shelf")
+
+[node name="Shape" type="CollisionShape3D" parent="Shelf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+shape = SubResource("BoxShape3D_shelf")
+
+[node name="ShelfBase" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.37, -2.4)

@@ -1,0 +1,13 @@
+# Godot 4 import cache / editor state - never commit
+.godot/
+
+# Exported builds
+build/
+export/
+*.exe
+*.pck
+*.zip
+
+# OS junk
+Thumbs.db
+.DS_Store
