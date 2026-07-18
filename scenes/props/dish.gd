@@ -23,7 +23,8 @@ static var _materials: Dictionary = {}
 var state: int = State.DIRTY: set = _set_state
 var holder: Busser = null  # server-side only
 
-@onready var mesh := $Mesh as MeshInstance3D
+# The visual lives inside the imported GLB scene ($Model); grab its MeshInstance3D.
+@onready var mesh: MeshInstance3D = find_children("*", "MeshInstance3D", true, false)[0]
 @onready var shape := $Shape as CollisionShape3D
 
 func _ready() -> void:

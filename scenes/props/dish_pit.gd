@@ -8,21 +8,29 @@ const WASH_INTERVAL := 1.2
 
 @onready var zone := $DropZone as Area3D
 @onready var machine := $Machine as StaticBody3D
-@onready var machine_mesh := $Machine/Mesh as MeshInstance3D
 @onready var shelf_base := $ShelfBase as Node3D
 
 var washing := false
 var shelf_count := 0
-var _machine_mat := StandardMaterial3D.new()
+var _lamp: MeshInstance3D = null
+var _lamp_mat := StandardMaterial3D.new()
 
 func _ready() -> void:
-	machine_mesh.material_override = _machine_mat
+	# The status lamp is a named object inside the imported machine GLB.
+	var lamps := $Machine/Model.find_children("Lamp*", "MeshInstance3D", true, false)
+	if not lamps.is_empty():
+		_lamp = lamps[0]
+		_lamp_mat.emission_enabled = true
+		_lamp.material_override = _lamp_mat
 
 func _physics_process(_delta: float) -> void:
-	# Machine glows green while a wash is in progress - derived from replicated
+	# Lamp: red idle, green while a wash is in progress - derived from replicated
 	# dish states, so it works on clients without extra sync.
-	var busy := DishLedger.count(Dish.State.WASHING) > 0
-	_machine_mat.albedo_color = Color(0.3, 0.8, 0.4) if busy else Color(0.5, 0.55, 0.62)
+	if _lamp != null:
+		var busy := DishLedger.count(Dish.State.WASHING) > 0
+		var c := Color(0.25, 0.9, 0.35) if busy else Color(0.9, 0.15, 0.1)
+		_lamp_mat.albedo_color = c
+		_lamp_mat.emission = c
 
 	if not multiplayer.is_server():
 		return
