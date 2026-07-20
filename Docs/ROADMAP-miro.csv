@@ -2,7 +2,7 @@ Title,Milestone,Status,Blocked By,Notes
 Feel playtest - full 5:00 solo shift in-editor,M0 MVP Gate,Todo,,Tune GDD section 9 constants: GRAB_RANGE CARRY_SPEED STACK_MAX THROW_FORCE BREAK_SPEED. Human judgement only - no harness can do this.
 2-instance client render check,M0 MVP Gate,Todo,,Two windows host+join. Verify lobby roster repaints on the CLIENT and held dishes look right on the non-authority peer.
 Log feel changes as constant edits + GDD section 9 ledger update,M0 MVP Gate,Todo,Feel playtest,Keeps the constants ledger honest.
-Audio bus layout (Master/Music/SFX/Diegetic),M1 Audio,Todo,M0 MVP Gate,Extend the existing Settings autoload to per-bus sliders. Do not invent a second settings path.
+Audio bus layout (Master/Music/SFX/Diegetic),M1 Audio,In Progress,,ACTIVE MILESTONE - assigned. Extend the existing Settings autoload to per-bus sliders. Do not invent a second settings path.
 SFX - grab and drop,M1 Audio,Todo,Audio bus layout,
 SFX - stack clatter scaled by stack size,M1 Audio,Todo,Audio bus layout,Hook already exists: Busser.stack_load tracks 1..5.
 SFX - plate shatter on break,M1 Audio,Todo,Audio bus layout,Hook already exists: Dish.State.BROKEN transition.
@@ -15,10 +15,10 @@ First-person arms visible when carrying,M2 Character,Todo,M0 MVP Gate,Empty / pl
 Carry poses driven by stack_load and carry_load,M2 Character,Todo,First-person arms,Both values are already replicated to the owning peer.
 Guest and chef idle/walk animation,M2 Character,Todo,M0 MVP Gate,guest.gd currently fakes a code-driven bob.
 Retarget imported animations,M2 Character,Todo,Guest and chef idle/walk animation,
-DECISION - mid-poly with shaders or stay low-poly,M3 Art Direction,Decision,,OPEN. Pipeline commitment: one .blend few props zero textures today. Weigh against the low-end-machine principle.
+DECISION - mid-poly with shaders or stay low-poly,M3 Art Direction,Done,,SETTLED 2026-07-20: staying LOW-POLY. Mid-poly would have locked us to Forward+ and dropped the low-end/web target. Reopen only with playtest evidence after audio and hands land.
 Bevel pass on metal and ceramic props,M3 Art Direction,Todo,,ACCEPTED regardless of the mid-poly decision. Nearly free and does most of the perceived-quality work.
-ReflectionProbe in the pit area,M3 Art Direction,Todo,DECISION mid-poly,Replaces SSR which was rejected. See Decision Log D2.
-Roughness/metallic material pass,M3 Art Direction,Todo,DECISION mid-poly,Skip subsurface scattering on ceramic - rejected as D3.
+ReflectionProbe in the pit area,M3 Art Direction,Todo,,Replaces SSR which was rejected. See Decision Log D2.
+Roughness/metallic material pass,M3 Art Direction,Todo,,Stainless reads as metal ceramic as glazed. No subsurface scattering - rejected as D3.
 MultiMesh for high-count props,M3 Art Direction,Todo,,Plates and glasses. Consistent with the optimization principle.
 Ground-center origins on all props,M3 Art Direction,Todo,,Makes snapping and stacking trivial. Free win.
 Carry speed and wobble curve,M4 Feel,Todo,M0 MVP Gate,The playtest generates this list rather than guessing now.
@@ -34,3 +34,4 @@ Player name entry,M5 Content,Backlog,,Crew rosters read YOU / PLAYER id today.
 SMT Games logo and identity,M6 Studio,Backlog,,Yellow FACC15 / crimson DC2626 - already the busser_theme palette.
 Short-form clip capture,M6 Studio,Backlog,M2 Character,Physics failures and co-op betrayal. Needs audio and hands to land.
 Steam page,M6 Studio,Backlog,M2 Character,Hook: Overcooked from the other side of the pass.
+Lighting and post pass - warm pass lights gentle bloom,M3 Art Direction,Todo,,Where the production shine actually comes from at this poly budget.

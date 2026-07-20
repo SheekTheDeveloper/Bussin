@@ -45,7 +45,13 @@ grab feels broken." Then, and only then, M1+ opens.
 
 ---
 
-## M1 - Audio pass (highest payoff per hour)
+## M1 - Audio pass (highest payoff per hour) - **ASSIGNED, IN PROGRESS NEXT**
+
+> **This is the current active milestone.** Picked up while the studio lead is
+> away, because it needs no input from him, both harnesses gate every commit
+> against silently breaking the loop, and it is the largest visible gain
+> available. Start with the bus layout, then the static SFX, then stems.
+
 
 Currently **zero** audio: no files, no `AudioStreamPlayer` nodes. This is the
 single biggest gap between "systems demo" and "game." Most of the hooks already
@@ -89,16 +95,29 @@ A floating camera with no hands is the second thing a viewer notices.
 
 ---
 
-## M3 - Art direction (DECISION REQUIRED FIRST)
+## M3 - Art direction: low-poly, sharpened (D1 SETTLED 2026-07-20)
 
-**Open decision, see the Decision Log below.** Do not start until it is settled.
+**We are staying low-poly.** The optimization principle holds: many machines,
+low-end machines, atmosphere carried by lighting and post rather than by
+polygons and shaders. Mid-poly + shader work is **not** happening now.
 
-If mid-poly is chosen:
-- [ ] Bevel pass on metal + ceramic props (cheap, high value, do this regardless)
-- [ ] ReflectionProbe in the pit area - **not** SSR (see Decision Log for why)
-- [ ] Roughness/metallic material pass; skip SSS on ceramic
-- [ ] MultiMesh for high-count props (plates, glasses)
-- [ ] Ground-center origins on all props (makes snapping/stacking trivial)
+That does not mean "leave it as is." These are the cheap wins that buy most of
+the perceived quality without the pipeline cost, and all of them survive on the
+Compatibility renderer:
+
+- [ ] **Bevel pass** on metal + ceramic props. Nearly free; catches a specular
+      highlight and does most of the work on its own.
+- [ ] **ReflectionProbe** in the pit area (explicitly not SSR - see D2).
+- [ ] **Roughness/metallic split** so stainless reads as metal and ceramic as
+      glazed. No subsurface scattering (D3).
+- [ ] **MultiMesh** for high-count props (plates, glasses).
+- [ ] **Ground-center origins** on all props - makes snapping and stacking
+      trivial and costs nothing to fix now.
+- [ ] Lighting + post pass: warm pass lights, gentle bloom. This is where the
+      "high-production shine" actually comes from at this poly budget.
+
+**Revisit trigger:** if a real playtest shows the game reads as cheap *after*
+audio and hands land, reopen D1 with evidence. Not before.
 
 ---
 
@@ -146,7 +165,7 @@ Decisions get logged here with their cost, so they are not re-litigated.
 
 | # | Decision | Status | Notes |
 |---|---|---|---|
-| D1 | Mid-poly + shaders, or stay low-poly? | **OPEN** | Mid-poly is a pipeline commitment: 1 `.blend`, few props, zero textures today. Weigh against the low-end-machine principle. |
+| D1 | Mid-poly + shaders, or stay low-poly? | **SETTLED 2026-07-20: stay low-poly** | Mid-poly was a pipeline commitment against 1 `.blend`, few props, zero textures, and it would have dropped the low-end/web target by locking us to Forward+. Taking the cheap wins instead (bevels, ReflectionProbe, MultiMesh, origins, lighting). Reopen only with playtest evidence, after audio and hands land. |
 | D2 | SSR for stainless steel | **REJECTED** | Forward+ only (absent on Compatibility, i.e. low-end/web). Screen-space, so it breaks on off-screen geometry - exactly the plate-stack case. Use a ReflectionProbe. |
 | D3 | Subsurface scattering on ceramic | **REJECTED** | Ceramic is not translucent enough to read at first-person gameplay distance. Cost with no visible payoff. |
 | D4 | Beveled edges on props | **ACCEPTED** | Nearly free, does most of the perceived-quality work on its own. |
