@@ -1,6 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=7 format=3]
 
-[ext_resource type="PackedScene" path="res://assets/models/diner_table.glb" id="1_model"]
+[ext_resource type="Script" path="res://scenes/props/table.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/models/diner_table.glb" id="2_model"]
+[ext_resource type="PackedScene" path="res://assets/models/chair.glb" id="3_chair"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_top"]
 size = Vector3(1.4, 0.08, 0.8)
@@ -8,9 +10,13 @@ size = Vector3(1.4, 0.08, 0.8)
 [sub_resource type="BoxShape3D" id="BoxShape3D_leg"]
 size = Vector3(0.18, 0.72, 0.18)
 
-[node name="Table" type="StaticBody3D"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_zone"]
+size = Vector3(1.5, 0.7, 1)
 
-[node name="Model" parent="." instance=ExtResource("1_model")]
+[node name="Table" type="StaticBody3D"]
+script = ExtResource("1_script")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
 
 [node name="TopShape" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.76, 0)
@@ -19,3 +25,37 @@ shape = SubResource("BoxShape3D_top")
 [node name="LegShape" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, 0)
 shape = SubResource("BoxShape3D_leg")
+
+[node name="TableZone" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+
+[node name="ZoneShape" type="CollisionShape3D" parent="TableZone"]
+shape = SubResource("BoxShape3D_zone")
+
+[node name="Seats" type="Node3D" parent="."]
+
+[node name="Seat1" type="Marker3D" parent="Seats"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 0, 0.62)
+
+[node name="Seat2" type="Marker3D" parent="Seats"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35, 0, 0.62)
+
+[node name="Seat3" type="Marker3D" parent="Seats"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 0, -0.62)
+
+[node name="Seat4" type="Marker3D" parent="Seats"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35, 0, -0.62)
+
+[node name="Chairs" type="Node3D" parent="."]
+
+[node name="Chair1" parent="Chairs" instance=ExtResource("3_chair")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.35, 0, 0.62)
+
+[node name="Chair2" parent="Chairs" instance=ExtResource("3_chair")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35, 0, 0.62)
+
+[node name="Chair3" parent="Chairs" instance=ExtResource("3_chair")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.35, 0, -0.62)
+
+[node name="Chair4" parent="Chairs" instance=ExtResource("3_chair")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.35, 0, -0.62)

@@ -1,0 +1,9 @@
+[gd_resource type="FontVariation" format=3 uid="uid://34issjhtryqg"]
+
+[sub_resource type="SystemFont" id="sys_display"]
+font_names = PackedStringArray("Oswald", "Bebas Neue", "Arial Narrow", "Archivo Narrow", "Impact", "Arial Black", "Arial")
+font_weight = 800
+font_stretch = 75
+
+[resource]
+base_font = SubResource("sys_display")

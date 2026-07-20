@@ -1,0 +1,53 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scenes/props/bus_tub.gd" id="1_tub"]
+[ext_resource type="PackedScene" path="res://assets/models/bus_tub.glb" id="2_model"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(0.62, 0.03, 0.42)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xwall"]
+size = Vector3(0.03, 0.223, 0.42)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_zwall"]
+size = Vector3(0.62, 0.223, 0.03)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_tub"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+
+[node name="BusTub" type="RigidBody3D"]
+mass = 2.0
+contact_monitor = true
+max_contacts_reported = 4
+script = ExtResource("1_tub")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="Floor" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0)
+shape = SubResource("BoxShape3D_floor")
+
+[node name="WallXPos" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.295, 0.1115, 0)
+shape = SubResource("BoxShape3D_xwall")
+
+[node name="WallXNeg" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.295, 0.1115, 0)
+shape = SubResource("BoxShape3D_xwall")
+
+[node name="WallZPos" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1115, 0.195)
+shape = SubResource("BoxShape3D_zwall")
+
+[node name="WallZNeg" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1115, -0.195)
+shape = SubResource("BoxShape3D_zwall")
+
+[node name="Sync" type="MultiplayerSynchronizer" parent="."]
+root_path = NodePath("..")
+replication_config = SubResource("SceneReplicationConfig_tub")

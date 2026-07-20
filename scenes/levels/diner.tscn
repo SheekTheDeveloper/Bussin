@@ -1,12 +1,20 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene format=3 uid="uid://dxa5cdo36t4d4"]
 
-[ext_resource type="Script" path="res://scenes/levels/diner.gd" id="1_diner"]
+[ext_resource type="Script" uid="uid://bhtqmtsbudrx6" path="res://scenes/levels/diner.gd" id="1_diner"]
 [ext_resource type="PackedScene" path="res://scenes/props/table.tscn" id="2_table"]
 [ext_resource type="PackedScene" path="res://scenes/props/dish.tscn" id="3_dish"]
 [ext_resource type="PackedScene" path="res://scenes/props/dirty_counter.tscn" id="4_dirty"]
+[ext_resource type="Script" uid="uid://0rk8i25rx1vs" path="res://scenes/ui/hud.gd" id="5_hud"]
 [ext_resource type="PackedScene" path="res://scenes/props/dish_machine.tscn" id="6_machine"]
 [ext_resource type="PackedScene" path="res://scenes/props/clean_counter.tscn" id="7_clean"]
-[ext_resource type="Script" path="res://scenes/ui/hud.gd" id="5_hud"]
+[ext_resource type="PackedScene" path="res://scenes/props/kitchen_pass.tscn" id="8_pass"]
+[ext_resource type="Script" uid="uid://br1s01d8kfx0v" path="res://scripts/guest_manager.gd" id="9_gm"]
+[ext_resource type="PackedScene" path="res://scenes/props/bus_tub.tscn" id="10_tub"]
+[ext_resource type="Script" path="res://scenes/props/diner_decor.gd" id="13_decor"]
+[ext_resource type="Script" path="res://scenes/props/tub_rack.gd" id="14_rack"]
+[ext_resource type="Theme" path="res://ui/theme/busser_theme.tres" id="11_theme"]
+[ext_resource type="FontVariation" path="res://ui/theme/font_display.tres" id="12_display"]
+[ext_resource type="Script" path="res://scenes/ui/pause_menu.gd" id="15_pause"]
 
 [sub_resource type="Environment" id="Environment_diner"]
 background_mode = 1
@@ -42,156 +50,228 @@ size = Vector3(0.3, 3, 14)
 [sub_resource type="BoxShape3D" id="BoxShape3D_wallEW"]
 size = Vector3(0.3, 3, 14)
 
-[node name="Diner" type="Node3D"]
+[sub_resource type="NavigationMesh" id="NavigationMesh_diner"]
+geometry_parsed_geometry_type = 1
+geometry_source_geometry_mode = 1
+geometry_source_group_name = &"nav_geo"
+agent_radius = 0.35
+agent_height = 1.4
+
+[sub_resource type="StyleBoxFlat" id="sb_receipt"]
+content_margin_left = 40.0
+content_margin_top = 36.0
+content_margin_right = 40.0
+content_margin_bottom = 32.0
+bg_color = Color(0.9608, 0.9412, 0.902, 1)
+
+[sub_resource type="StyleBoxFlat" id="sb_headbox"]
+content_margin_left = 18.0
+content_margin_top = 8.0
+content_margin_right = 18.0
+content_margin_bottom = 8.0
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.1216, 0.1608, 0.2157, 1)
+
+[sub_resource type="StyleBoxFlat" id="sb_btn_yellow"]
+content_margin_top = 14.0
+content_margin_bottom = 14.0
+bg_color = Color(0.98, 0.8, 0.0824, 1)
+
+[node name="Diner" type="Node3D" groups=["nav_geo"] unique_id=1036327273]
 script = ExtResource("1_diner")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1021087567]
 environment = SubResource("Environment_diner")
 
-[node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
-rotation = Vector3(-0.85, 0.5, 0)
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=347975491]
+transform = Transform3D(0.87758255, -0.36018303, 0.31641275, 0, 0.6599831, 0.7512804, -0.47942555, -0.6593106, 0.57918966, 0, 6, 0)
 light_energy = 1.2
 shadow_enabled = true
 
-[node name="Floor" type="StaticBody3D" parent="."]
+[node name="NavRegion" type="NavigationRegion3D" parent="." unique_id=313218417]
+navigation_mesh = SubResource("NavigationMesh_diner")
 
-[node name="Mesh" type="MeshInstance3D" parent="Floor"]
+[node name="Floor" type="StaticBody3D" parent="." unique_id=313218418 groups=["dirties_dishes"]]
+
+[node name="Mesh" type="MeshInstance3D" parent="Floor" unique_id=89397301]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 mesh = SubResource("BoxMesh_floor")
 
-[node name="Shape" type="CollisionShape3D" parent="Floor"]
+[node name="Shape" type="CollisionShape3D" parent="Floor" unique_id=739560469]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 shape = SubResource("BoxShape3D_floor")
 
-[node name="WallN" type="StaticBody3D" parent="."]
+[node name="WallN" type="StaticBody3D" parent="." unique_id=1526127297]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -7.05)
 
-[node name="Mesh" type="MeshInstance3D" parent="WallN"]
+[node name="Mesh" type="MeshInstance3D" parent="WallN" unique_id=172074240]
 mesh = SubResource("BoxMesh_wallNS")
 
-[node name="Shape" type="CollisionShape3D" parent="WallN"]
+[node name="Shape" type="CollisionShape3D" parent="WallN" unique_id=1677758319]
 shape = SubResource("BoxShape3D_wallNS")
 
-[node name="WallS" type="StaticBody3D" parent="."]
+[node name="WallS" type="StaticBody3D" parent="." unique_id=1680660045]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 7.05)
 
-[node name="Mesh" type="MeshInstance3D" parent="WallS"]
+[node name="Mesh" type="MeshInstance3D" parent="WallS" unique_id=720215784]
 mesh = SubResource("BoxMesh_wallNS")
 
-[node name="Shape" type="CollisionShape3D" parent="WallS"]
+[node name="Shape" type="CollisionShape3D" parent="WallS" unique_id=1657745151]
 shape = SubResource("BoxShape3D_wallNS")
 
-[node name="WallE" type="StaticBody3D" parent="."]
+[node name="WallE" type="StaticBody3D" parent="." unique_id=127976899]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.15, 1.5, 0)
 
-[node name="Mesh" type="MeshInstance3D" parent="WallE"]
+[node name="Mesh" type="MeshInstance3D" parent="WallE" unique_id=1810414818]
 mesh = SubResource("BoxMesh_wallEW")
 
-[node name="Shape" type="CollisionShape3D" parent="WallE"]
+[node name="Shape" type="CollisionShape3D" parent="WallE" unique_id=853963367]
 shape = SubResource("BoxShape3D_wallEW")
 
-[node name="WallW" type="StaticBody3D" parent="."]
+[node name="WallW" type="StaticBody3D" parent="." unique_id=1358015265]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.15, 1.5, 0)
 
-[node name="Mesh" type="MeshInstance3D" parent="WallW"]
+[node name="Mesh" type="MeshInstance3D" parent="WallW" unique_id=765309336]
 mesh = SubResource("BoxMesh_wallEW")
 
-[node name="Shape" type="CollisionShape3D" parent="WallW"]
+[node name="Shape" type="CollisionShape3D" parent="WallW" unique_id=401318086]
 shape = SubResource("BoxShape3D_wallEW")
 
-[node name="Tables" type="Node3D" parent="."]
+[node name="Decor" type="Node3D" parent="." unique_id=1607452017]
+script = ExtResource("13_decor")
 
-[node name="Table1" parent="Tables" instance=ExtResource("2_table")]
+[node name="Tables" type="Node3D" parent="." unique_id=1607452016]
+
+[node name="Table1" parent="Tables" unique_id=1593178843 instance=ExtResource("2_table")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -3.5)
 
-[node name="Table2" parent="Tables" instance=ExtResource("2_table")]
+[node name="Table2" parent="Tables" unique_id=1615007864 instance=ExtResource("2_table")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, -3.5)
 
-[node name="Table3" parent="Tables" instance=ExtResource("2_table")]
+[node name="Table3" parent="Tables" unique_id=961745718 instance=ExtResource("2_table")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -3.5)
 
-[node name="Table4" parent="Tables" instance=ExtResource("2_table")]
+[node name="Table4" parent="Tables" unique_id=274026308 instance=ExtResource("2_table")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 1.5)
 
-[node name="Table5" parent="Tables" instance=ExtResource("2_table")]
+[node name="Table5" parent="Tables" unique_id=1315471695 instance=ExtResource("2_table")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 1.5)
 
-[node name="Table6" parent="Tables" instance=ExtResource("2_table")]
+[node name="Table6" parent="Tables" unique_id=939027022 instance=ExtResource("2_table")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 1.5)
 
-[node name="Dishes" type="Node3D" parent="."]
+[node name="Dishes" type="Node3D" parent="." unique_id=1279038912]
 
-[node name="Dish1" parent="Dishes" instance=ExtResource("3_dish")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.35, 0.86, -3.5)
+[node name="Dish1" parent="Dishes" unique_id=610842969 instance=ExtResource("3_dish")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.95, 0.95, 1.8)
+start_state = 4
 
-[node name="Dish2" parent="Dishes" instance=ExtResource("3_dish")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.65, 0.86, -3.5)
+[node name="Dish2" parent="Dishes" unique_id=450801846 instance=ExtResource("3_dish")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0.95, 1.8)
+start_state = 4
 
-[node name="Dish3" parent="Dishes" instance=ExtResource("3_dish")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.35, 0.86, -3.5)
+[node name="Dish3" parent="Dishes" unique_id=1261756381 instance=ExtResource("3_dish")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.65, 0.95, 1.8)
+start_state = 4
 
-[node name="Dish4" parent="Dishes" instance=ExtResource("3_dish")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.65, 0.86, -3.5)
+[node name="Dish4" parent="Dishes" unique_id=977219617 instance=ExtResource("3_dish")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.95, 0.95, 2.4)
+start_state = 4
 
-[node name="Dish5" parent="Dishes" instance=ExtResource("3_dish")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.65, 0.86, -3.5)
+[node name="Dish5" parent="Dishes" unique_id=1941172175 instance=ExtResource("3_dish")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0.95, 2.4)
+start_state = 4
 
-[node name="Dish6" parent="Dishes" instance=ExtResource("3_dish")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.35, 0.86, -3.5)
+[node name="Dish6" parent="Dishes" unique_id=1353757759 instance=ExtResource("3_dish")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.65, 0.95, 2.4)
+start_state = 4
 
-[node name="Dish7" parent="Dishes" instance=ExtResource("3_dish")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.35, 0.86, 1.5)
+[node name="Dish7" parent="Dishes" unique_id=1459985594 instance=ExtResource("3_dish")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.95, 0.95, 3)
+start_state = 4
 
-[node name="Dish8" parent="Dishes" instance=ExtResource("3_dish")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.65, 0.86, 1.5)
+[node name="Dish8" parent="Dishes" unique_id=1126097970 instance=ExtResource("3_dish")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0.95, 3)
+start_state = 4
 
-[node name="Dish9" parent="Dishes" instance=ExtResource("3_dish")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.35, 0.86, 1.5)
+[node name="Dish9" parent="Dishes" unique_id=1764698837 instance=ExtResource("3_dish")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.65, 0.95, 3)
+start_state = 4
 
-[node name="Dish10" parent="Dishes" instance=ExtResource("3_dish")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.65, 0.86, 1.5)
+[node name="Dish10" parent="Dishes" unique_id=266953938 instance=ExtResource("3_dish")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.95, 0.95, 3.6)
+start_state = 4
 
-[node name="Dish11" parent="Dishes" instance=ExtResource("3_dish")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.65, 0.86, 1.5)
+[node name="Dish11" parent="Dishes" unique_id=79855965 instance=ExtResource("3_dish")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0.95, 3.6)
+start_state = 4
 
-[node name="Dish12" parent="Dishes" instance=ExtResource("3_dish")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.35, 0.86, 1.5)
+[node name="Dish12" parent="Dishes" unique_id=145255403 instance=ExtResource("3_dish")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.65, 0.95, 3.6)
+start_state = 4
 
-[node name="DirtyCounter" parent="." instance=ExtResource("4_dirty")]
+[node name="DirtyCounter" parent="." unique_id=1293249271 instance=ExtResource("4_dirty")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0, -2.7)
 
-[node name="DishMachine" parent="." instance=ExtResource("6_machine")]
+[node name="DishMachine" parent="." unique_id=236339455 instance=ExtResource("6_machine")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 9.35, 0, 0)
 output_counter_path = NodePath("../CleanCounter")
 
-[node name="CleanCounter" parent="." instance=ExtResource("7_clean")]
+[node name="CleanCounter" parent="." unique_id=899668564 instance=ExtResource("7_clean")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0, 2.7)
 
-[node name="SpawnPoints" type="Node3D" parent="."]
+[node name="KitchenPass" parent="." unique_id=940761902 instance=ExtResource("8_pass")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.40018, 0, -5.7)
 
-[node name="Spawn1" type="Marker3D" parent="SpawnPoints"]
+[node name="TubRack" type="StaticBody3D" parent="." unique_id=1730125051]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0, 6.4)
+script = ExtResource("14_rack")
+
+[node name="Tubs" type="Node3D" parent="." unique_id=1730125052]
+
+[node name="Tub1" parent="Tubs" unique_id=1564415843 instance=ExtResource("10_tub")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0.58, 6.4)
+
+[node name="Tub2" parent="Tubs" unique_id=1160042702 instance=ExtResource("10_tub")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 1.08, 6.4)
+
+[node name="Guests" type="Node3D" parent="." unique_id=1677883141]
+
+[node name="GuestSpawner" type="MultiplayerSpawner" parent="." unique_id=14873881]
+_spawnable_scenes = PackedStringArray("res://scenes/actors/guest.tscn")
+spawn_path = NodePath("../Guests")
+
+[node name="GuestManager" type="Node" parent="." unique_id=745291589]
+script = ExtResource("9_gm")
+
+[node name="SpawnPoints" type="Node3D" parent="." unique_id=797602512]
+
+[node name="Spawn1" type="Marker3D" parent="SpawnPoints" unique_id=1237833754]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 0.1, 5.5)
 
-[node name="Spawn2" type="Marker3D" parent="SpawnPoints"]
+[node name="Spawn2" type="Marker3D" parent="SpawnPoints" unique_id=2041111292]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.1, 5.5)
 
-[node name="Spawn3" type="Marker3D" parent="SpawnPoints"]
+[node name="Spawn3" type="Marker3D" parent="SpawnPoints" unique_id=411572832]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0.1, 5.5)
 
-[node name="Spawn4" type="Marker3D" parent="SpawnPoints"]
+[node name="Spawn4" type="Marker3D" parent="SpawnPoints" unique_id=249012034]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.1, 5.5)
 
-[node name="Players" type="Node3D" parent="."]
+[node name="Players" type="Node3D" parent="." unique_id=1731602452]
 
-[node name="PlayerSpawner" type="MultiplayerSpawner" parent="."]
+[node name="PlayerSpawner" type="MultiplayerSpawner" parent="." unique_id=563274625]
 _spawnable_scenes = PackedStringArray("res://scenes/actors/busser.tscn")
 spawn_path = NodePath("../Players")
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=96093961]
 script = ExtResource("5_hud")
 
-[node name="Root" type="Control" parent="HUD"]
+[node name="Root" type="Control" parent="HUD" unique_id=1592394298]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -199,8 +279,20 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme = ExtResource("11_theme")
 
-[node name="Crosshair" type="ColorRect" parent="HUD/Root"]
+[node name="Crosshair" type="Control" parent="HUD/Root" unique_id=1498502190]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Dot" type="ColorRect" parent="HUD/Root/Crosshair" unique_id=84233055]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -214,43 +306,344 @@ offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(1, 1, 1, 0.7)
+color = Color(1, 1, 1, 0.85)
 
-[node name="TopLeft" type="VBoxContainer" parent="HUD/Root"]
-layout_mode = 0
+[node name="TickUp" type="ColorRect" parent="HUD/Root/Crosshair" unique_id=1527211067]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -1.0
+offset_top = -12.0
+offset_right = 1.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0.6)
+
+[node name="TickDown" type="ColorRect" parent="HUD/Root/Crosshair" unique_id=901760936]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -1.0
+offset_top = 5.0
+offset_right = 1.0
+offset_bottom = 12.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0.6)
+
+[node name="TickLeft" type="ColorRect" parent="HUD/Root/Crosshair" unique_id=1850070881]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -12.0
+offset_top = -1.0
+offset_right = -5.0
+offset_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0.6)
+
+[node name="TickRight" type="ColorRect" parent="HUD/Root/Crosshair" unique_id=744492538]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 5.0
+offset_top = -1.0
+offset_right = 12.0
+offset_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0.6)
+
+[node name="TopLeft" type="VBoxContainer" parent="HUD/Root" unique_id=606747015]
+custom_minimum_size = Vector2(238, 0)
+layout_mode = 1
 offset_left = 16.0
-offset_top = 12.0
-offset_right = 640.0
-offset_bottom = 120.0
+offset_top = 16.0
+offset_right = 254.0
+offset_bottom = 320.0
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="Crew" type="PanelContainer" parent="HUD/Root/TopLeft" unique_id=1152850185]
+layout_mode = 2
+
+[node name="V" type="VBoxContainer" parent="HUD/Root/TopLeft/Crew" unique_id=455725902]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Head" type="Label" parent="HUD/Root/TopLeft/Crew/V" unique_id=1373382681]
+modulate = Color(1, 1, 1, 0.6)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "SHIFT CREW"
+
+[node name="Divider" type="ColorRect" parent="HUD/Root/TopLeft/Crew/V" unique_id=14118607]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.976, 0.98, 0.984, 0.12)
+
+[node name="CrewList" type="Label" parent="HUD/Root/TopLeft/Crew/V" unique_id=1288239516]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.29, 0.8706, 0.502, 1)
+theme_override_font_sizes/font_size = 14
+text = "1  YOU          ON SHIFT"
+
+[node name="Stations" type="PanelContainer" parent="HUD/Root/TopLeft" unique_id=258445421]
+layout_mode = 2
+
+[node name="V" type="VBoxContainer" parent="HUD/Root/TopLeft/Stations" unique_id=496096818]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Head" type="Label" parent="HUD/Root/TopLeft/Stations/V" unique_id=1142366152]
+modulate = Color(1, 1, 1, 0.6)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "STATIONS  //  DISH FLOW"
+
+[node name="Divider" type="ColorRect" parent="HUD/Root/TopLeft/Stations/V" unique_id=1141379861]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.976, 0.98, 0.984, 0.12)
+
+[node name="CountsLabel" type="Label" parent="HUD/Root/TopLeft/Stations/V" unique_id=2089510969]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "DIRTY 0   PIT 0
+CLEAN 0   PASS 0
+SERVED 0   BROKEN 0"
+
+[node name="ShiftTracker" type="PanelContainer" parent="HUD/Root" unique_id=121944893]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -316.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 152.0
+grow_horizontal = 0
 mouse_filter = 2
 
-[node name="TimeLabel" type="Label" parent="HUD/Root/TopLeft"]
+[node name="V" type="VBoxContainer" parent="HUD/Root/ShiftTracker" unique_id=797671687]
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "4:00"
+theme_override_constants/separation = 10
 
-[node name="CountsLabel" type="Label" parent="HUD/Root/TopLeft"]
+[node name="Head" type="Label" parent="HUD/Root/ShiftTracker/V" unique_id=2083754430]
+modulate = Color(1, 1, 1, 0.6)
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "SHIFT TRACKER  //  LUNCH WAVE"
+
+[node name="ClockRow" type="HBoxContainer" parent="HUD/Root/ShiftTracker/V" unique_id=2009115110]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TimeBar" type="ProgressBar" parent="HUD/Root/ShiftTracker/V/ClockRow" unique_id=2129959622]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+show_percentage = false
+
+[node name="TimeLabel" type="Label" parent="HUD/Root/ShiftTracker/V/ClockRow" unique_id=963868243]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "5:00"
+
+[node name="MoneyRow" type="HBoxContainer" parent="HUD/Root/ShiftTracker/V" unique_id=2002589880]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="MoneyLabel" type="Label" parent="HUD/Root/ShiftTracker/V/MoneyRow" unique_id=1041263300]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.29, 0.8706, 0.502, 1)
+theme_override_font_sizes/font_size = 17
+text = "$0.00"
+
+[node name="GoalLabel" type="Label" parent="HUD/Root/ShiftTracker/V/MoneyRow" unique_id=501245555]
+modulate = Color(1, 1, 1, 0.4)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = " / $500"
+vertical_alignment = 2
+
+[node name="StarsLabel" type="Label" parent="HUD/Root/ShiftTracker/V/MoneyRow" unique_id=353998388]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.8, 0.0824, 1)
 theme_override_font_sizes/font_size = 16
-text = "Dirty 0   At pit 0   Washing 0   Clean 0/0   Broken 0"
+text = "★★★★★"
+horizontal_alignment = 2
 
-[node name="ControlsHint" type="Label" parent="HUD/Root"]
+[node name="StatsRow" type="HBoxContainer" parent="HUD/Root/ShiftTracker/V" unique_id=22013873]
+layout_mode = 2
+
+[node name="CoversLabel" type="Label" parent="HUD/Root/ShiftTracker/V/StatsRow" unique_id=173356447]
+unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0.55)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "COVERS 0"
+
+[node name="CarryGroup" type="HBoxContainer" parent="HUD/Root" unique_id=293954716]
+unique_name_in_owner = true
+visible = false
 layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -110.0
+offset_top = -150.0
+offset_right = 110.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 14
+
+[node name="Wobble" type="VBoxContainer" parent="HUD/Root/CarryGroup" unique_id=282271072]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="WobbleLabel" type="Label" parent="HUD/Root/CarryGroup/Wobble" unique_id=91855607]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.29, 0.8706, 0.502, 1)
+theme_override_font_sizes/font_size = 11
+text = "WOBBLE"
+horizontal_alignment = 1
+
+[node name="WobbleBar" type="ProgressBar" parent="HUD/Root/CarryGroup/Wobble" unique_id=135759654]
+unique_name_in_owner = true
+self_modulate = Color(0.29, 0.8706, 0.502, 1)
+custom_minimum_size = Vector2(20, 96)
+layout_mode = 2
+size_flags_horizontal = 4
+value = 30.0
+fill_mode = 3
+show_percentage = false
+
+[node name="PlatesCard" type="PanelContainer" parent="HUD/Root/CarryGroup" unique_id=1964344402]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="V" type="VBoxContainer" parent="HUD/Root/CarryGroup/PlatesCard" unique_id=1976075128]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Head" type="Label" parent="HUD/Root/CarryGroup/PlatesCard/V" unique_id=1762486919]
+modulate = Color(1, 1, 1, 0.55)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "PLATES CARRIED"
+horizontal_alignment = 1
+
+[node name="PlatesNum" type="Label" parent="HUD/Root/CarryGroup/PlatesCard/V" unique_id=1348832281]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("12_display")
+theme_override_font_sizes/font_size = 40
+text = "0 / 6"
+horizontal_alignment = 1
+
+[node name="HeavyLabel" type="Label" parent="HUD/Root/CarryGroup/PlatesCard/V" unique_id=2091356589]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8627, 0.149, 0.149, 1)
+theme_override_font_sizes/font_size = 12
+text = "⚠ HEAVY"
+horizontal_alignment = 1
+
+[node name="Alarm" type="HBoxContainer" parent="HUD/Root" unique_id=1705852383]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -420.0
+offset_top = -52.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="RedBar" type="ColorRect" parent="HUD/Root/Alarm" unique_id=1202492340]
+custom_minimum_size = Vector2(3, 0)
+layout_mode = 2
+color = Color(0.8627, 0.149, 0.149, 1)
+
+[node name="V" type="VBoxContainer" parent="HUD/Root/Alarm" unique_id=1059238433]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_constants/separation = 0
+
+[node name="Title" type="Label" parent="HUD/Root/Alarm/V" unique_id=1490265627]
+modulate = Color(0.8627, 0.149, 0.149, 0.8)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "⚠ STATUS ALARM"
+horizontal_alignment = 2
+
+[node name="Body" type="Label" parent="HUD/Root/Alarm/V" unique_id=262063989]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8627, 0.149, 0.149, 1)
+theme_override_font_sizes/font_size = 15
+text = "NO CLEAN PLATES AT THE PASS"
+horizontal_alignment = 2
+
+[node name="ControlsHint" type="Label" parent="HUD/Root" unique_id=1836477736]
+modulate = Color(1, 1, 1, 0.4)
+layout_mode = 1
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 16.0
-offset_top = -130.0
+offset_top = -118.0
 offset_right = 640.0
 offset_bottom = -16.0
 grow_vertical = 0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 15
-text = "LMB / R1 - grab / drop     RMB / L1 - throw
-E / Square - start dish machine
-WASD or left stick move, right stick look, Shift/L3 sprint, Space/Cross jump, Esc release mouse"
+theme_override_font_sizes/font_size = 13
+text = "Ferry CLEAN plates to the kitchen pass - the chef flashes red when he's starving
+Grab a BUS TUB (empty hands), scoop dirty plates in, dump at the pit (E / Square)
+Then run the machine (E / Square) - clean plates come out the far end
+LMB/R1 grab-drop-scoop, RMB/L1 throw, sticks or WASD+mouse, Esc frees the mouse
+Clean plates that touch the floor get dirty. Hard throws break plates. Forever."
 
-[node name="EndOverlay" type="ColorRect" parent="HUD/Root"]
+[node name="EndOverlay" type="ColorRect" parent="HUD/Root" unique_id=1149600660]
+unique_name_in_owner = true
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -258,9 +651,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.55)
+color = Color(0.0706, 0.0902, 0.149, 0.92)
 
-[node name="Center" type="CenterContainer" parent="HUD/Root/EndOverlay"]
+[node name="Center" type="CenterContainer" parent="HUD/Root/EndOverlay" unique_id=1901504412]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -268,24 +661,133 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="HUD/Root/EndOverlay/Center"]
+[node name="Receipt" type="PanelContainer" parent="HUD/Root/EndOverlay/Center" unique_id=158825846]
+custom_minimum_size = Vector2(460, 0)
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_styles/panel = SubResource("sb_receipt")
 
-[node name="EndLabel" type="Label" parent="HUD/Root/EndOverlay/Center/VBox"]
+[node name="V" type="VBoxContainer" parent="HUD/Root/EndOverlay/Center/Receipt" unique_id=1801921768]
 layout_mode = 2
-theme_override_font_sizes/font_size = 110
-text = "86'D"
-horizontal_alignment = 1
+theme_override_constants/separation = 10
 
-[node name="SubLabel" type="Label" parent="HUD/Root/EndOverlay/Center/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = ""
-horizontal_alignment = 1
-
-[node name="MenuButton" type="Button" parent="HUD/Root/EndOverlay/Center/VBox"]
-custom_minimum_size = Vector2(220, 44)
+[node name="HeadBox" type="PanelContainer" parent="HUD/Root/EndOverlay/Center/Receipt/V" unique_id=1985865071]
 layout_mode = 2
 size_flags_horizontal = 4
-text = "Back to Menu"
+theme_override_styles/panel = SubResource("sb_headbox")
+
+[node name="Title" type="Label" parent="HUD/Root/EndOverlay/Center/Receipt/V/HeadBox" unique_id=596563941]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1216, 0.1608, 0.2157, 1)
+theme_override_fonts/font = ExtResource("12_display")
+theme_override_font_sizes/font_size = 34
+text = "SHIFT OVER"
+horizontal_alignment = 1
+
+[node name="ReportCard" type="Label" parent="HUD/Root/EndOverlay/Center/Receipt/V" unique_id=1857200934]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1216, 0.1608, 0.2157, 1)
+theme_override_fonts/font = ExtResource("12_display")
+theme_override_font_sizes/font_size = 22
+text = "REPORT CARD"
+horizontal_alignment = 1
+
+[node name="Loc" type="Label" parent="HUD/Root/EndOverlay/Center/Receipt/V" unique_id=273749707]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42, 0.4471, 0.502, 1)
+theme_override_font_sizes/font_size = 12
+text = "DINER LOCATION #01  -  LUNCH WAVE RESULTS"
+horizontal_alignment = 1
+
+[node name="Sep1" type="ColorRect" parent="HUD/Root/EndOverlay/Center/Receipt/V" unique_id=908432055]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.1216, 0.1608, 0.2157, 0.25)
+
+[node name="Cols" type="HBoxContainer" parent="HUD/Root/EndOverlay/Center/Receipt/V" unique_id=413852173]
+layout_mode = 2
+theme_override_constants/separation = 28
+
+[node name="GoodCol" type="Label" parent="HUD/Root/EndOverlay/Center/Receipt/V/Cols" unique_id=250811495]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1216, 0.1608, 0.2157, 1)
+theme_override_font_sizes/font_size = 14
+text = "✓ THE GOOD"
+
+[node name="ChaosCol" type="Label" parent="HUD/Root/EndOverlay/Center/Receipt/V/Cols" unique_id=946546869]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1216, 0.1608, 0.2157, 1)
+theme_override_font_sizes/font_size = 14
+text = "✗ THE CHAOS"
+
+[node name="Sep2" type="ColorRect" parent="HUD/Root/EndOverlay/Center/Receipt/V" unique_id=346760143]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.1216, 0.1608, 0.2157, 0.25)
+
+[node name="Stars" type="Label" parent="HUD/Root/EndOverlay/Center/Receipt/V" unique_id=448162569]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.8, 0.0824, 1)
+theme_override_font_sizes/font_size = 30
+text = "★★★☆☆"
+horizontal_alignment = 1
+
+[node name="Verdict" type="Label" parent="HUD/Root/EndOverlay/Center/Receipt/V" unique_id=1579922726]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1216, 0.1608, 0.2157, 1)
+theme_override_fonts/font = ExtResource("12_display")
+theme_override_font_sizes/font_size = 24
+text = "PASSABLE SHIFT"
+horizontal_alignment = 1
+
+[node name="Sep3" type="ColorRect" parent="HUD/Root/EndOverlay/Center/Receipt/V" unique_id=605704684]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.1216, 0.1608, 0.2157, 0.25)
+
+[node name="Earnings" type="RichTextLabel" parent="HUD/Root/EndOverlay/Center/Receipt/V" unique_id=933220604]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 78)
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1216, 0.1608, 0.2157, 1)
+theme_override_font_sizes/normal_font_size = 15
+bbcode_enabled = true
+text = "earnings"
+fit_content = true
+scroll_active = false
+
+[node name="Buttons" type="VBoxContainer" parent="HUD/Root/EndOverlay/Center/Receipt/V" unique_id=880994298]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ClockInNext" type="Button" parent="HUD/Root/EndOverlay/Center/Receipt/V/Buttons" unique_id=1396482195]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1216, 0.1608, 0.2157, 1)
+theme_override_colors/font_focus_color = Color(0.1216, 0.1608, 0.2157, 1)
+theme_override_colors/font_pressed_color = Color(0.1216, 0.1608, 0.2157, 1)
+theme_override_colors/font_hover_color = Color(0.1216, 0.1608, 0.2157, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.1216, 0.1608, 0.2157, 1)
+theme_override_fonts/font = ExtResource("12_display")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("sb_btn_yellow")
+theme_override_styles/pressed = SubResource("sb_btn_yellow")
+theme_override_styles/hover = SubResource("sb_btn_yellow")
+theme_override_styles/focus = SubResource("sb_btn_yellow")
+text = "CLOCK IN NEXT SHIFT"
+
+[node name="ReturnMenu" type="Button" parent="HUD/Root/EndOverlay/Center/Receipt/V/Buttons" unique_id=65335437]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("12_display")
+theme_override_font_sizes/font_size = 20
+text = "RETURN TO BREAKROOM"
+
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+script = ExtResource("15_pause")

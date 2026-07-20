@@ -1,0 +1,7 @@
+[gd_resource type="FontVariation" format=3 uid="uid://b1jfvy6r6ypds"]
+
+[sub_resource type="SystemFont" id="sys_mono"]
+font_names = PackedStringArray("JetBrains Mono", "Consolas", "Cascadia Mono", "Courier New", "DejaVu Sans Mono", "monospace")
+
+[resource]
+base_font = SubResource("sys_mono")

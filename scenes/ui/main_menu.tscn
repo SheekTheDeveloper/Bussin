@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/main_menu.gd" id="1_menu"]
+[ext_resource type="Theme" path="res://ui/theme/busser_theme.tres" id="2_theme"]
+[ext_resource type="FontVariation" path="res://ui/theme/font_display.tres" id="3_display"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -9,6 +11,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_menu")
 
 [node name="Bg" type="ColorRect" parent="."]
@@ -18,63 +21,262 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.09, 0.1, 0.13, 1)
+color = Color(0.0549, 0.0667, 0.0863, 1)
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="TopBar" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 18.0
+offset_right = 400.0
+offset_bottom = 40.0
+grow_horizontal = 2
+modulate = Color(0.98, 0.8, 0.0824, 0.85)
+theme_override_font_sizes/font_size = 13
+text = "BUSSER  //  BREAKROOM"
+horizontal_alignment = 1
+
+[node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 72
+theme_override_constants/margin_top = 64
+theme_override_constants/margin_right = 72
+theme_override_constants/margin_bottom = 56
 
-[node name="VBox" type="VBoxContainer" parent="Center"]
+[node name="Row" type="HBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 48
 
-[node name="Title" type="Label" parent="Center/VBox"]
+[node name="Left" type="VBoxContainer" parent="Margin/Row"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 90
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 4
+
+[node name="Wordmark" type="Label" parent="Margin/Row/Left"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.976, 0.98, 0.984, 1)
+theme_override_fonts/font = ExtResource("3_display")
+theme_override_font_sizes/font_size = 132
 text = "BUSSER"
-horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="Center/VBox"]
-modulate = Color(1, 1, 1, 0.6)
+[node name="Underline" type="ColorRect" parent="Margin/Row/Left"]
+custom_minimum_size = Vector2(140, 6)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
-text = "an SMT Games kitchen-adjacent friendslop"
-horizontal_alignment = 1
+size_flags_horizontal = 0
+color = Color(0.98, 0.8, 0.0824, 1)
 
-[node name="Spacer" type="Control" parent="Center/VBox"]
-custom_minimum_size = Vector2(0, 14)
+[node name="Tagline" type="Label" parent="Margin/Row/Left"]
+layout_mode = 2
+modulate = Color(1, 1, 1, 0.45)
+theme_override_font_sizes/font_size = 13
+text = "FIRST-PERSON  //  CO-OP  //  DINER CHAOS  //  SMT GAMES"
+
+[node name="Gap" type="Control" parent="Margin/Row/Left"]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
-[node name="SoloButton" type="Button" parent="Center/VBox"]
-custom_minimum_size = Vector2(280, 46)
+[node name="Nav" type="VBoxContainer" parent="Margin/Row/Left"]
 layout_mode = 2
-text = "Solo Shift"
+theme_override_constants/separation = 22
 
-[node name="HostButton" type="Button" parent="Center/VBox"]
-custom_minimum_size = Vector2(280, 46)
+[node name="ClockInItem" type="VBoxContainer" parent="Margin/Row/Left/Nav"]
 layout_mode = 2
-text = "Host (port 7777)"
+theme_override_constants/separation = 0
 
-[node name="JoinRow" type="HBoxContainer" parent="Center/VBox"]
+[node name="ClockIn" type="Button" parent="Margin/Row/Left/Nav/ClockInItem"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+flat = true
+theme_override_fonts/font = ExtResource("3_display")
+theme_override_font_sizes/font_size = 40
+text = "CLOCK IN"
+alignment = 0
+
+[node name="Sub" type="Label" parent="Margin/Row/Left/Nav/ClockInItem"]
+layout_mode = 2
+modulate = Color(1, 1, 1, 0.4)
+theme_override_font_sizes/font_size = 13
+text = "SOLO SHIFT"
+
+[node name="HostItem" type="VBoxContainer" parent="Margin/Row/Left/Nav"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="HostShift" type="Button" parent="Margin/Row/Left/Nav/HostItem"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+flat = true
+theme_override_fonts/font = ExtResource("3_display")
+theme_override_font_sizes/font_size = 40
+text = "HOST SHIFT"
+alignment = 0
+
+[node name="Sub" type="Label" parent="Margin/Row/Left/Nav/HostItem"]
+layout_mode = 2
+modulate = Color(1, 1, 1, 0.4)
+theme_override_font_sizes/font_size = 13
+text = "OPEN A TABLE FOR THE CREW  //  PORT 7777"
+
+[node name="JoinItem" type="VBoxContainer" parent="Margin/Row/Left/Nav"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="JoinCrew" type="Button" parent="Margin/Row/Left/Nav/JoinItem"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+flat = true
+theme_override_fonts/font = ExtResource("3_display")
+theme_override_font_sizes/font_size = 40
+text = "JOIN CREW"
+alignment = 0
+
+[node name="Sub" type="Label" parent="Margin/Row/Left/Nav/JoinItem"]
+layout_mode = 2
+modulate = Color(1, 1, 1, 0.4)
+theme_override_font_sizes/font_size = 13
+text = "ENTER A HOST ADDRESS"
+
+[node name="JoinRow" type="HBoxContainer" parent="Margin/Row/Left/Nav/JoinItem"]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="IpEdit" type="LineEdit" parent="Center/VBox/JoinRow"]
-custom_minimum_size = Vector2(186, 46)
+[node name="IpEdit" type="LineEdit" parent="Margin/Row/Left/Nav/JoinItem/JoinRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 42)
 layout_mode = 2
 placeholder_text = "127.0.0.1"
 
-[node name="JoinButton" type="Button" parent="Center/VBox/JoinRow"]
-custom_minimum_size = Vector2(86, 46)
+[node name="JoinGo" type="Button" parent="Margin/Row/Left/Nav/JoinItem/JoinRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 42)
 layout_mode = 2
-text = "Join"
+text = "CONNECT"
 
-[node name="Status" type="Label" parent="Center/VBox"]
+[node name="SettingsItem" type="VBoxContainer" parent="Margin/Row/Left/Nav"]
 layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="ShiftSettings" type="Button" parent="Margin/Row/Left/Nav/SettingsItem"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+flat = true
+theme_override_fonts/font = ExtResource("3_display")
+theme_override_font_sizes/font_size = 40
+text = "SHIFT SETTINGS"
+alignment = 0
+
+[node name="Sub" type="Label" parent="Margin/Row/Left/Nav/SettingsItem"]
+layout_mode = 2
+modulate = Color(1, 1, 1, 0.4)
+theme_override_font_sizes/font_size = 13
+text = "AUDIO · CONTROLS · KEY BINDINGS"
+
+[node name="ClockOutItem" type="VBoxContainer" parent="Margin/Row/Left/Nav"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="ClockOut" type="Button" parent="Margin/Row/Left/Nav/ClockOutItem"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+flat = true
+theme_override_fonts/font = ExtResource("3_display")
+theme_override_font_sizes/font_size = 40
+text = "CLOCK OUT"
+alignment = 0
+
+[node name="Sub" type="Label" parent="Margin/Row/Left/Nav/ClockOutItem"]
+layout_mode = 2
+modulate = Color(1, 1, 1, 0.4)
+theme_override_font_sizes/font_size = 13
+text = "QUIT TO DESKTOP"
+
+[node name="Status" type="Label" parent="Margin/Row/Left"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 8
+modulate = Color(0.98, 0.8, 0.0824, 1)
 theme_override_font_sizes/font_size = 14
 text = ""
-horizontal_alignment = 1
+
+[node name="Right" type="VBoxContainer" parent="Margin/Row"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+theme_override_constants/separation = 0
+
+[node name="CrewPanel" type="PanelContainer" parent="Margin/Row/Right"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="Pad" type="VBoxContainer" parent="Margin/Row/Right/CrewPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Head" type="Label" parent="Margin/Row/Right/CrewPanel/Pad"]
+layout_mode = 2
+modulate = Color(1, 1, 1, 0.6)
+theme_override_font_sizes/font_size = 13
+text = "CURRENT SHIFT CREW"
+
+[node name="Divider" type="ColorRect" parent="Margin/Row/Right/CrewPanel/Pad"]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.976, 0.98, 0.984, 0.12)
+
+[node name="Body" type="Label" parent="Margin/Row/Right/CrewPanel/Pad"]
+unique_name_in_owner = true
+layout_mode = 2
+modulate = Color(1, 1, 1, 0.75)
+theme_override_font_sizes/font_size = 14
+text = "1  YOU              READY
+2  - OPEN SLOT
+3  - OPEN SLOT
+4  - OPEN SLOT"
+
+[node name="LobbyLine" type="Label" parent="Margin/Row/Right/CrewPanel/Pad"]
+unique_name_in_owner = true
+layout_mode = 2
+modulate = Color(0.29, 0.8706, 0.502, 1)
+theme_override_font_sizes/font_size = 12
+text = "LOBBY  //  OFFLINE"
+
+[node name="Footer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 72.0
+offset_top = -34.0
+offset_right = -72.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Studio" type="Label" parent="Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+modulate = Color(1, 1, 1, 0.35)
+theme_override_font_sizes/font_size = 12
+text = "SMT GAMES"
+
+[node name="Draft" type="Label" parent="Footer"]
+layout_mode = 2
+modulate = Color(1, 1, 1, 0.35)
+theme_override_font_sizes/font_size = 12
+text = "DRAFT 0.1 (2026)"
+horizontal_alignment = 2

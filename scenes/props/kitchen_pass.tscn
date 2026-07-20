@@ -1,0 +1,32 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scenes/props/kitchen_pass.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/models/kitchen_pass.glb" id="2_model"]
+[ext_resource type="PackedScene" path="res://assets/models/chef.glb" id="3_chef"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_counter"]
+size = Vector3(5, 0.95, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_zone"]
+size = Vector3(4.8, 0.8, 1)
+
+[node name="KitchenPass" type="StaticBody3D"]
+script = ExtResource("1_script")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.475, 0)
+shape = SubResource("BoxShape3D_counter")
+
+[node name="PassZone" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+
+[node name="ZoneShape" type="CollisionShape3D" parent="PassZone"]
+shape = SubResource("BoxShape3D_zone")
+
+[node name="CookSpot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, -0.85)
+
+[node name="Chef" parent="." instance=ExtResource("3_chef")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.9, 0, -0.75)

@@ -1,0 +1,39 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/actors/guest.gd" id="1_guest"]
+[ext_resource type="PackedScene" path="res://assets/models/guest.glb" id="2_model"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_guest"]
+radius = 0.3
+height = 1.5
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_guest"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath(".:activity")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+
+[node name="Guest" type="CharacterBody3D" groups=["guests"]]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_guest")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+shape = SubResource("CapsuleShape3D_guest")
+
+[node name="Agent" type="NavigationAgent3D" parent="."]
+path_desired_distance = 0.4
+target_desired_distance = 0.4
+avoidance_enabled = false
+
+[node name="Sync" type="MultiplayerSynchronizer" parent="."]
+root_path = NodePath("..")
+replication_config = SubResource("SceneReplicationConfig_guest")
