@@ -2,14 +2,14 @@ Title,Milestone,Status,Blocked By,Notes
 Feel playtest - full 5:00 solo shift in-editor,M0 MVP Gate,Todo,,Tune GDD section 9 constants: GRAB_RANGE CARRY_SPEED STACK_MAX THROW_FORCE BREAK_SPEED. Human judgement only - no harness can do this.
 2-instance client render check,M0 MVP Gate,Todo,,Two windows host+join. Verify lobby roster repaints on the CLIENT and held dishes look right on the non-authority peer.
 Log feel changes as constant edits + GDD section 9 ledger update,M0 MVP Gate,Todo,Feel playtest,Keeps the constants ledger honest.
-Audio bus layout (Master/Music/SFX/Diegetic),M1 Audio,In Progress,,ACTIVE MILESTONE - assigned. Extend the existing Settings autoload to per-bus sliders. Do not invent a second settings path.
-SFX - grab and drop,M1 Audio,Todo,Audio bus layout,
-SFX - stack clatter scaled by stack size,M1 Audio,Todo,Audio bus layout,Hook already exists: Busser.stack_load tracks 1..5.
-SFX - plate shatter on break,M1 Audio,Todo,Audio bus layout,Hook already exists: Dish.State.BROKEN transition.
-SFX - tub scoop and set-down,M1 Audio,Todo,Audio bus layout,
-SFX - machine wash loop + finish hiss,M1 Audio,Todo,Audio bus layout,Hook already exists: DishMachine.washing.
-Chef barks when the pass is starved,M1 Audio,Todo,Audio bus layout,Hook already exists: kitchen_pass.gd computes the starving flag and flashes the chef red.
-Diner ambience bed,M1 Audio,Todo,Audio bus layout,
+Audio bus layout (Master/Music/SFX/Diegetic),M1 Audio,Done,,Master/Music/SFX/Ambience in default_bus_layout.tres + per-bus sliders on the existing Settings autoload.
+SFX - grab and drop,M1 Audio,Done,Audio bus layout,Wired via dish.gd STATE_SOUNDS.
+SFX - stack clatter scaled by stack size,M1 Audio,Done,Audio bus layout,light/mid/heavy chosen by stack count in busser._drop_stack.
+SFX - plate shatter on break,M1 Audio,Done,Audio bus layout,Fires on the BROKEN state transition so every peer plays it locally.
+SFX - tub scoop and set-down,M1 Audio,Done,Audio bus layout,Scoop pitches up as the tub fills.
+SFX - machine wash loop + finish hiss,M1 Audio,Done,Audio bus layout,Loop driven by DishLedger.count(WASHING) so clients stay in sync.
+Chef barks when the pass is starved,M1 Audio,Done,Audio bus layout,Rate-limited to 4.5s off the existing starving flag.
+Diner ambience bed,M1 Audio,Done,Audio bus layout,Own Ambience bus.
 Dynamic music stems by shift state,M1 Audio,Todo,Diner ambience bed,Use Godot AudioStreamInteractive rather than hand-rolled crossfades. Do a static loop first.
 First-person arms visible when carrying,M2 Character,Todo,M0 MVP Gate,Empty / plate stack / tub variants.
 Carry poses driven by stack_load and carry_load,M2 Character,Todo,First-person arms,Both values are already replicated to the owning peer.
@@ -35,3 +35,5 @@ SMT Games logo and identity,M6 Studio,Backlog,,Yellow FACC15 / crimson DC2626 - 
 Short-form clip capture,M6 Studio,Backlog,M2 Character,Physics failures and co-op betrayal. Needs audio and hands to land.
 Steam page,M6 Studio,Backlog,M2 Character,Hook: Overcooked from the other side of the pass.
 Lighting and post pass - warm pass lights gentle bloom,M3 Art Direction,Todo,,Where the production shine actually comes from at this poly budget.
+Replace placeholder sounds with real assets,M1 Audio,Todo,,Wiring is done and filenames are stable - this is a drop-in swap. Current files are synthesized programmer art from tools/gen_placeholder_audio.py.
+Door chime on guest arrival,M1 Audio,Todo,Audio bus layout,

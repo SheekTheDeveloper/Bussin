@@ -15,6 +15,9 @@ signal changed
 
 # --- Defaults (also the reset targets) -------------------------------------
 const DEF_MASTER := 1.0
+const DEF_MUSIC := 0.8
+const DEF_SFX := 1.0
+const DEF_AMBIENCE := 0.7
 const DEF_MOUSE_SENS := 1.0
 const DEF_STICK_SENS := 1.0
 const DEF_INVERT_Y := false
@@ -44,6 +47,9 @@ const REBINDABLE := [
 
 # Live values (read directly by gameplay).
 var master_volume := DEF_MASTER
+var music_volume := DEF_MUSIC
+var sfx_volume := DEF_SFX
+var ambience_volume := DEF_AMBIENCE
 var mouse_sensitivity := DEF_MOUSE_SENS
 var stick_sensitivity := DEF_STICK_SENS
 var invert_y := DEF_INVERT_Y
@@ -67,6 +73,9 @@ func load_all() -> void:
 	# Missing file on first launch is fine - we just keep the defaults.
 	if cfg.load(CONFIG_PATH) == OK:
 		master_volume = clampf(cfg.get_value("audio", "master", DEF_MASTER), 0.0, 1.0)
+		music_volume = clampf(cfg.get_value("audio", "music", DEF_MUSIC), 0.0, 1.0)
+		sfx_volume = clampf(cfg.get_value("audio", "sfx", DEF_SFX), 0.0, 1.0)
+		ambience_volume = clampf(cfg.get_value("audio", "ambience", DEF_AMBIENCE), 0.0, 1.0)
 		mouse_sensitivity = clampf(cfg.get_value("controls", "mouse_sensitivity", DEF_MOUSE_SENS), MOUSE_SENS_MIN, MOUSE_SENS_MAX)
 		stick_sensitivity = clampf(cfg.get_value("controls", "stick_sensitivity", DEF_STICK_SENS), STICK_SENS_MIN, STICK_SENS_MAX)
 		invert_y = bool(cfg.get_value("controls", "invert_y", DEF_INVERT_Y))
@@ -77,6 +86,9 @@ func load_all() -> void:
 func save() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("audio", "master", master_volume)
+	cfg.set_value("audio", "music", music_volume)
+	cfg.set_value("audio", "sfx", sfx_volume)
+	cfg.set_value("audio", "ambience", ambience_volume)
 	cfg.set_value("controls", "mouse_sensitivity", mouse_sensitivity)
 	cfg.set_value("controls", "stick_sensitivity", stick_sensitivity)
 	cfg.set_value("controls", "invert_y", invert_y)
@@ -97,9 +109,23 @@ func apply_all() -> void:
 	_apply_video()
 	changed.emit()
 
+## Push every slider onto its bus. Bus volumes are set ONLY from here, so the
+## saved config and what you actually hear can never disagree.
 func _apply_audio() -> void:
-	AudioServer.set_bus_volume_db(0, linear_to_db(master_volume))
-	AudioServer.set_bus_mute(0, master_volume <= 0.0)
+	_apply_bus(&"Master", master_volume)
+	_apply_bus(&"Music", music_volume)
+	_apply_bus(&"SFX", sfx_volume)
+	_apply_bus(&"Ambience", ambience_volume)
+
+## Mute at zero rather than sending volume to -inf dB, which some drivers treat
+## as an audible near-silence. Missing bus = layout drift, warn instead of crash.
+func _apply_bus(bus_name: StringName, linear: float) -> void:
+	var idx := AudioServer.get_bus_index(bus_name)
+	if idx < 0:
+		push_warning("Settings: no audio bus named '%s' (check default_bus_layout.tres)" % bus_name)
+		return
+	AudioServer.set_bus_volume_db(idx, linear_to_db(linear))
+	AudioServer.set_bus_mute(idx, linear <= 0.0)
 
 func _apply_video() -> void:
 	# Headless (import/soak) has no window to size - guard so autoload boot is safe.
@@ -112,6 +138,24 @@ func _apply_video() -> void:
 
 func set_master_volume(v: float) -> void:
 	master_volume = clampf(v, 0.0, 1.0)
+	_apply_audio()
+	save()
+	changed.emit()
+
+func set_music_volume(v: float) -> void:
+	music_volume = clampf(v, 0.0, 1.0)
+	_apply_audio()
+	save()
+	changed.emit()
+
+func set_sfx_volume(v: float) -> void:
+	sfx_volume = clampf(v, 0.0, 1.0)
+	_apply_audio()
+	save()
+	changed.emit()
+
+func set_ambience_volume(v: float) -> void:
+	ambience_volume = clampf(v, 0.0, 1.0)
 	_apply_audio()
 	save()
 	changed.emit()

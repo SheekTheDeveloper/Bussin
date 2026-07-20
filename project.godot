@@ -21,6 +21,7 @@ Net="*res://scripts/autoload/net.gd"
 DishLedger="*res://scripts/autoload/dish_ledger.gd"
 GameState="*res://scripts/autoload/game_state.gd"
 Settings="*res://scripts/autoload/settings.gd"
+Audio="*res://scripts/autoload/audio.gd"
 
 [display]
 

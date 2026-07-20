@@ -171,11 +171,26 @@ func _server_grab_or_drop(target_path: NodePath) -> void:
 ## resolves to CLEAN/DIRTY on its own (Dish.drop), so cleans dropped in the pass
 ## zone flag AT_PASS just like a single hand-placed plate.
 func _drop_stack() -> void:
+	# One clatter for the whole run, weighted by how many plates are coming down,
+	# so a five-plate set-down reads as heavier and less controlled than one.
+	# Each plate also makes its own state-transition sound (see dish.gd); this
+	# layers on top rather than replacing them.
+	_play_stack_clatter(held_stack.size())
 	for d in held_stack:
 		if is_instance_valid(d):
 			d.drop()
 	held_stack.clear()
 	server_set_stack(0)
+
+func _play_stack_clatter(count: int) -> void:
+	if count <= 0:
+		return
+	var id := &"clatter_light"
+	if count >= 4:
+		id = &"clatter_heavy"
+	elif count >= 2:
+		id = &"clatter_mid"
+	Audio.play_3d(id, hold_point.global_position, -1.0)
 
 func _in_reach(n: Node) -> bool:
 	return n is Node3D and (n as Node3D).global_position.distance_to(head.global_position) <= GRAB_RANGE + 0.5

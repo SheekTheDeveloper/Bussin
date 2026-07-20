@@ -77,6 +77,7 @@ func pick_up(by: Busser) -> void:
 func set_down() -> void:
 	carrier = null
 	_set_collision(true)
+	Audio.play_3d(&"tub_down", global_position, -1.0)
 	if multiplayer.is_server():
 		freeze = false
 		linear_velocity = Vector3.ZERO
@@ -103,6 +104,10 @@ func load_dish(dish: Dish) -> bool:
 		return false
 	contents.append(dish)
 	dish.stow(self)
+	# Pitches up as the tub fills, so you can hear it getting full without
+	# looking at the HUD.
+	Audio.play_3d(&"tub_scoop", global_position, -1.0,
+		1.0 + float(contents.size()) / float(CAPACITY) * 0.25)
 	return true
 
 ## Empties the tub onto the pit counter. Dishes land DIRTY in the drop zone;

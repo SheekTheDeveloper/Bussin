@@ -156,6 +156,9 @@ end, players recover the dirty end:
 | Hand-stack capacity | 5 plates | `Busser.STACK_MAX` (grab to add, grab-away to set down, throw = top plate) |
 | Plate break speed | 6 m/s | `Dish.BREAK_SPEED` |
 | Cook time / plate | 2.5 s | `KitchenPass.COOK_TIME` |
+| Chef bark interval | 4.5 s | `KitchenPass.BARK_INTERVAL` |
+| SFX voice pool | 24 | `Audio.POOL_SIZE` |
+| SFX audible range | 22 m | `Audio.DEFAULT_MAX_DISTANCE` |
 | Party size | 1-4 | `GuestManager._spawn_party` |
 | Spawn interval | crew-scaled: 14 s solo → ~5.2 s at 4 (×0.72/player, ×0.8-1.2 jitter, 4 s floor) | `GuestManager.BASE_SPAWN_INTERVAL`, `PER_PLAYER_SPEEDUP`, `MIN_SPAWN_INTERVAL` |
 | Queue patience | crew-scaled: 45 s solo → 30 s at 4 (−5 s/player) | `GuestManager.BASE_QUEUE_PATIENCE`, `MIN_QUEUE_PATIENCE` |
@@ -182,6 +185,6 @@ Ordered target set once the return-half playtest passes:
 1. ~~Fix the tub-carry plate attachment~~ - ✅ fix landed in `bus_tub.gd`, live-confirm pending (§10).
 2. Character models + first-person hands/arms; import + retarget animations.
 3. Textures + more meshes/props/assets (Blender-MCP pipeline).
-4. Sound pass - grab/drop/break/wash/machine, chef barks, diner ambience, muzak.
+4. ~~Sound pass - grab/drop/break/wash/machine, chef barks, diner ambience~~ - ✅ **architecture + wiring done 2026-07-20** (`Audio` autoload, `default_bus_layout.tres`, per-bus volume settings). Sounds are derived from replicated state so they need no RPCs. Remaining: swap the synthesized placeholders for real assets, add a door chime, and layer the dynamic music stems.
 5. Collision + feel tuning (carry speed, wobble, scoop stack height, throw arcs).
 6. Then: spray-wash feel, wipe/reset step, mode toggle (Casual / BusTub Master), menu lobby.

@@ -104,6 +104,23 @@ synced cover count and the dish pool, so it costs zero network traffic and can
 never desync. Connect to `GameState.stats_changed` or `DishLedger.changed`
 rather than polling in `_process` where you can.
 
+### Adding a sound
+
+1. Drop the file in `assets/audio/` and add an id to `Audio.SOUNDS`.
+2. Trigger it from **replicated state**, not from the verb that caused it - a
+   dish state transition, a derived count, a flag every peer computes. That way
+   it plays correctly on all peers with no networking. See `dish.gd`'s
+   `STATE_SOUNDS` for the pattern.
+3. Use `Audio.play_3d()` for anything in the world and `Audio.play_ui()` for
+   menus. Never create an `AudioStreamPlayer` in gameplay code - the pool exists
+   so a dropped stack of plates does not spawn a node per plate.
+4. For a continuous sound owned by a prop (machine hum, room tone), use
+   `Audio.make_loop_3d()`; it returns a player the prop owns and can stop.
+
+The sounds currently in `assets/audio/` are synthesized placeholders from
+`tools/gen_placeholder_audio.py`. Replacing one is a drop-in as long as the
+filename stays the same.
+
 ### Tuning game feel
 
 Constants live at the top of their owning script and are catalogued in **§9 of

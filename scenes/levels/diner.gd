@@ -8,8 +8,16 @@ const BUSSER_SCENE := preload("res://scenes/actors/busser.tscn")
 @onready var spawn_points: Array[Node] = $SpawnPoints.get_children()
 @onready var nav_region := $NavRegion as NavigationRegion3D
 
+## Room tone. Non-positional would be simpler, but a 3D source at the middle of
+## the room keeps it from swamping the pit when you are standing at the machine.
+var _ambience: AudioStreamPlayer3D = null
+
 func _ready() -> void:
 	GameState.start_shift()
+	_ambience = Audio.make_loop_3d(&"ambience_loop", self, -12.0, &"Ambience")
+	if _ambience != null:
+		_ambience.max_distance = 60.0
+		_ambience.play()
 	if multiplayer.is_server():
 		# Bake the guest navmesh from the level's static colliders (group
 		# "nav_geo" = this scene). Deferred so runtime-built collision (the tub

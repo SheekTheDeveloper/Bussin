@@ -41,6 +41,7 @@ func join_game(ip: String) -> void:
 	multiplayer.multiplayer_peer = peer
 
 func back_to_menu() -> void:
+	Audio.stop_all()
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 	get_tree().change_scene_to_file(MENU_SCENE)
 

@@ -152,13 +152,33 @@ func eaten() -> void:
 	if multiplayer.is_server():
 		freeze = false
 
+## Sound for entering a state. Driven off the state machine rather than off the
+## verb that caused it, so every peer plays it from its own replicated copy with
+## no sound RPCs. States not listed here are silent on purpose.
+const STATE_SOUNDS := {
+	State.HELD: [&"grab", 0.0],
+	State.BROKEN: [&"shatter", 2.0],
+	State.AT_PIT: [&"plate_to_pit", -2.0],
+	State.SERVED: [&"plate_served", -4.0],
+	State.CLEAN: [&"clatter_light", -8.0],   # quiet: the machine's own sound carries this moment
+}
+
 func _set_state(value: int) -> void:
 	if state == value:
 		return
 	state = value
 	if is_node_ready():
 		_apply_state()
+		_play_state_sound(value)
 	DishLedger.notify_changed()
+
+## `is_node_ready()` gates this so authored start states (a plate staged CLEAN
+## on the shelf) do not fire a chorus of sounds on level load.
+func _play_state_sound(value: int) -> void:
+	if not STATE_SOUNDS.has(value):
+		return
+	var entry: Array = STATE_SOUNDS[value]
+	Audio.play_3d(entry[0], global_position, entry[1])
 
 func _apply_state() -> void:
 	mesh.material_override = _material_for(state)

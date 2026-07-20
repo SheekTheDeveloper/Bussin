@@ -159,6 +159,15 @@ func _run() -> void:
 
 	print("=== RETURN SOAK: %d/%d checks passed ===" % [_checks - _failures, _checks])
 	print("RETURN SOAK FINAL: %s" % ("OK" if _failures == 0 else "FAIL"))
+	# Let in-flight sounds finish before tearing the tree down. The final checks
+	# land right after three plates hit the pit, and the headless dummy audio
+	# driver does not release a playback that is merely stopped - only one that
+	# has run to completion. Quitting mid-playback leaks the stream and prints
+	# engine errors after an otherwise passing run. silence() then blocks the
+	# fresh one-shots that teardown itself would trigger.
+	await get_tree().create_timer(1.0).timeout
+	Audio.silence()
+	await _frames(2)
 	get_tree().quit(1 if _failures > 0 else 0)
 
 ## DIRTY -> HELD (hand stack) -> AT_PIT, the bare-hands bussing run.

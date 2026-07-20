@@ -63,7 +63,8 @@ winnable at any headcount instead of being impossible solo or trivial with four.
   plus `HELD` (in a busser's hands or tub) and `BROKEN` (the only exit - the pool permanently shrinks). Read this enum first: almost every other system is just a query over it. The HUD counts it, the chef's alarm reads it, and the shift's money is derived from it.
 
 - **Derived state over replicated state.** Money is never stored or synced - `net_earnings()` recomputes it from the synced cover count and the `BROKEN` tally, so every peer arrives at the same dollars with zero extra network traffic. Prefer this pattern when adding readouts.
-- Autoloads: `Net` (connection lifecycle), `DishLedger` (pool registry/counts), `GameState` (shift clock + verdict), `Settings` (persistent options + input rebinds).
+- Autoloads: `Net` (connection lifecycle), `DishLedger` (pool registry/counts), `GameState` (shift clock + verdict), `Settings` (persistent options + input rebinds), `Audio` (pooled sound playback).
+- **Audio needs no new RPCs.** Sounds are derived from already-replicated state: a dish transitioning to `BROKEN` plays the shatter on every peer independently, the wash hum follows `DishLedger.count(WASHING)`, and the chef bark follows the same starving flag that turns him red. If you reach for a "play sound" RPC, replicate the state instead.
 - **Options/pause** are client-local: co-op is server-authoritative, so pausing never stops the sim - it just frees the cursor. The `SettingsPanel` overlay is one code-built component shared by the breakroom menu and the pause menu. See `Docs/Settings-Controls.md`.
 - Known MVP limitations: late joiners may see stale visuals for a frame; held dishes lag slightly on the holder's own screen (server round-trip); no spray-wash minigame yet.
 
@@ -75,6 +76,7 @@ scripts/autoload/     Globals, always loaded (see project.godot [autoload])
   dish_ledger.gd      Registry of every Dish; count(state) is the query API
   game_state.gd       Shift clock, covers, walkouts, derived money
   settings.gd         Persistent options + input rebinds (user://busser_settings.cfg)
+  audio.gd            Pooled SFX playback, bus routing, sound library
 scripts/
   guest_manager.gd    Server-side host stand: spawn → queue → seat → walkout
   return_soak.gd      Headless test of the player half (BUSSER_RETURN_SOAK=1)
@@ -86,6 +88,8 @@ scenes/levels/        diner.gd - spawns players, bakes the navmesh, scales diffi
 scenes/ui/            main_menu, lobby, hud, pause_menu, settings_panel
 ui/theme/             Shared Godot theme resource (see Docs/DesignSystem-Busser.md)
 assets/               .blend source + exported .glb models
+  audio/              PLACEHOLDER sounds (regenerate: tools/gen_placeholder_audio.py)
+default_bus_layout.tres  Master / Music / SFX / Ambience buses
 Docs/                 GDD, design system, controls, and a Godot primer
 ```
 

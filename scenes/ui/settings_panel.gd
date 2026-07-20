@@ -43,8 +43,15 @@ func _ready() -> void:
 
 	# --- Audio ---
 	col.add_child(_section("AUDIO"))
+	var pct := func(v): return "%d%%" % roundi(v * 100.0)
 	col.add_child(_slider_row("MASTER VOLUME", 0.0, 1.0, 0.05, Settings.master_volume,
-		Settings.set_master_volume, func(v): return "%d%%" % roundi(v * 100.0)))
+		Settings.set_master_volume, pct))
+	col.add_child(_slider_row("MUSIC", 0.0, 1.0, 0.05, Settings.music_volume,
+		Settings.set_music_volume, pct))
+	col.add_child(_slider_row("SOUND EFFECTS", 0.0, 1.0, 0.05, Settings.sfx_volume,
+		Settings.set_sfx_volume, pct))
+	col.add_child(_slider_row("AMBIENCE", 0.0, 1.0, 0.05, Settings.ambience_volume,
+		Settings.set_ambience_volume, pct))
 
 	# --- Controls ---
 	col.add_child(_section("CONTROLS"))

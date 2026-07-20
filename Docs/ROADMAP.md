@@ -68,13 +68,20 @@ exist in code, so this is mostly wiring.
 | `Dish.State.BROKEN` transition | `dish.gd` | shatter |
 | `DishMachine.washing` | `dish_machine.gd` | wash loop + finish hiss |
 
-- [ ] **Audio bus layout first** (Master / Music / SFX / Diegetic). `Settings`
-      already owns master volume - extend it to per-bus sliders in the same
-      pattern, do not invent a second settings path.
-- [ ] SFX: grab, drop, stack-clatter (scaled), break/shatter, tub scoop, tub
-      set-down, machine loop, machine finish hiss, door chime.
-- [ ] Chef barks off the existing starving flag.
-- [ ] Diner ambience bed.
+- [x] **Audio bus layout** - Master / Music / SFX / Ambience in
+      `default_bus_layout.tres`, with per-bus sliders added to the existing
+      `Settings` autoload and options panel. Bus volumes are set only from
+      `Settings._apply_bus`, so the saved config and what you hear cannot drift.
+- [x] **`Audio` autoload** - 24-voice pool with oldest-voice stealing, pitch
+      jitter, graceful no-op on missing files, `stop_all()` / `silence()`.
+- [x] SFX wired: grab, stack-clatter (light/mid/heavy by count), shatter,
+      plate-to-pit, plate-served, clean, tub scoop (pitches up as it fills),
+      tub set-down, machine hum, machine finish.
+- [x] Chef barks off the existing starving flag, rate-limited to 4.5s.
+- [x] Diner ambience bed on its own bus.
+- [ ] Replace the placeholder sounds with real ones (the files are synthesized
+      programmer-art; the wiring is done and filenames are stable).
+- [ ] Door chime on guest arrival.
 - [ ] **Dynamic music stems** reacting to shift state (setup / rush / stall).
       Ambitious - do the static loop first, add stems once it is playing.
 

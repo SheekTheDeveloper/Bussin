@@ -7,12 +7,16 @@ extends StaticBody3D
 ## has no clean plates - the diegetic "NEED PLATES!" alarm.
 
 const COOK_TIME := 2.5
+## Chef barks are the diegetic "NEED PLATES!" alarm. Rate-limited so a long
+## starved stretch nags instead of turning into a machine gun.
+const BARK_INTERVAL := 4.5
 
 var orders: Array = []  # of Guest, FIFO; server-side
 var _cooking := false
 var _chef_mesh: MeshInstance3D = null
 var _chef_red := StandardMaterial3D.new()
 var _chef_t := 0.0
+var _bark_cooldown := 0.0
 
 @onready var zone := $PassZone as Area3D
 @onready var cook_spot := $CookSpot as Node3D
