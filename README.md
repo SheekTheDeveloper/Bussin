@@ -190,4 +190,12 @@ missing guard is the single most common bug in this codebase's history.
 Setup, branch/commit workflow, definition of done, recipes for common changes,
 and the gotchas that have already bitten us: **[`CONTRIBUTING.md`](CONTRIBUTING.md)**.
 
+## Roadmap
+
+`Docs/ROADMAP.md` is the source of truth for **what and when** (the GDD owns
+**how**). It carries the milestone list, the current gate, and a Decision Log
+recording what was accepted or rejected and why, so choices are not
+re-litigated. `Docs/ROADMAP-miro.csv` is the same board as an importable CSV
+(Miro > Import > CSV).
+
 Design docs live in `Docs/`.

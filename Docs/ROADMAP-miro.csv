@@ -1,0 +1,36 @@
+Title,Milestone,Status,Blocked By,Notes
+Feel playtest - full 5:00 solo shift in-editor,M0 MVP Gate,Todo,,Tune GDD section 9 constants: GRAB_RANGE CARRY_SPEED STACK_MAX THROW_FORCE BREAK_SPEED. Human judgement only - no harness can do this.
+2-instance client render check,M0 MVP Gate,Todo,,Two windows host+join. Verify lobby roster repaints on the CLIENT and held dishes look right on the non-authority peer.
+Log feel changes as constant edits + GDD section 9 ledger update,M0 MVP Gate,Todo,Feel playtest,Keeps the constants ledger honest.
+Audio bus layout (Master/Music/SFX/Diegetic),M1 Audio,Todo,M0 MVP Gate,Extend the existing Settings autoload to per-bus sliders. Do not invent a second settings path.
+SFX - grab and drop,M1 Audio,Todo,Audio bus layout,
+SFX - stack clatter scaled by stack size,M1 Audio,Todo,Audio bus layout,Hook already exists: Busser.stack_load tracks 1..5.
+SFX - plate shatter on break,M1 Audio,Todo,Audio bus layout,Hook already exists: Dish.State.BROKEN transition.
+SFX - tub scoop and set-down,M1 Audio,Todo,Audio bus layout,
+SFX - machine wash loop + finish hiss,M1 Audio,Todo,Audio bus layout,Hook already exists: DishMachine.washing.
+Chef barks when the pass is starved,M1 Audio,Todo,Audio bus layout,Hook already exists: kitchen_pass.gd computes the starving flag and flashes the chef red.
+Diner ambience bed,M1 Audio,Todo,Audio bus layout,
+Dynamic music stems by shift state,M1 Audio,Todo,Diner ambience bed,Use Godot AudioStreamInteractive rather than hand-rolled crossfades. Do a static loop first.
+First-person arms visible when carrying,M2 Character,Todo,M0 MVP Gate,Empty / plate stack / tub variants.
+Carry poses driven by stack_load and carry_load,M2 Character,Todo,First-person arms,Both values are already replicated to the owning peer.
+Guest and chef idle/walk animation,M2 Character,Todo,M0 MVP Gate,guest.gd currently fakes a code-driven bob.
+Retarget imported animations,M2 Character,Todo,Guest and chef idle/walk animation,
+DECISION - mid-poly with shaders or stay low-poly,M3 Art Direction,Decision,,OPEN. Pipeline commitment: one .blend few props zero textures today. Weigh against the low-end-machine principle.
+Bevel pass on metal and ceramic props,M3 Art Direction,Todo,,ACCEPTED regardless of the mid-poly decision. Nearly free and does most of the perceived-quality work.
+ReflectionProbe in the pit area,M3 Art Direction,Todo,DECISION mid-poly,Replaces SSR which was rejected. See Decision Log D2.
+Roughness/metallic material pass,M3 Art Direction,Todo,DECISION mid-poly,Skip subsurface scattering on ceramic - rejected as D3.
+MultiMesh for high-count props,M3 Art Direction,Todo,,Plates and glasses. Consistent with the optimization principle.
+Ground-center origins on all props,M3 Art Direction,Todo,,Makes snapping and stacking trivial. Free win.
+Carry speed and wobble curve,M4 Feel,Todo,M0 MVP Gate,The playtest generates this list rather than guessing now.
+Scoop stack height and throw arcs,M4 Feel,Todo,M0 MVP Gate,
+Spray-wash minigame,M4 Feel,Todo,M0 MVP Gate,GDD section 8 PowerWash-lite.
+Wipe / place-setting reset step,M4 Feel,Todo,M0 MVP Gate,Today clearing all dishes flips a table straight to READY.
+Walk-in freezer with ice and slip decals,M5 Content,Backlog,M1 Audio,On the GDD section 7 explicit cut list. Post-MVP.
+Delivery truck and freight boxes,M5 Content,Backlog,M1 Audio,The Friday 5pm rush. Post-MVP.
+Mop bucket and wet-floor sign,M5 Content,Backlog,M1 Audio,On the GDD section 7 cut list.
+Trash bags and dumpster,M5 Content,Backlog,M1 Audio,On the GDD section 7 cut list.
+Casual vs BusTub Master mode toggle,M5 Content,Backlog,M0 MVP Gate,
+Player name entry,M5 Content,Backlog,,Crew rosters read YOU / PLAYER id today.
+SMT Games logo and identity,M6 Studio,Backlog,,Yellow FACC15 / crimson DC2626 - already the busser_theme palette.
+Short-form clip capture,M6 Studio,Backlog,M2 Character,Physics failures and co-op betrayal. Needs audio and hands to land.
+Steam page,M6 Studio,Backlog,M2 Character,Hook: Overcooked from the other side of the pass.
