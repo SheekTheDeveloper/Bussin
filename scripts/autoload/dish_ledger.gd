@@ -23,4 +23,3 @@ func count(state: int) -> int:
 		if d.state == state:
 			n += 1
 	return n
-

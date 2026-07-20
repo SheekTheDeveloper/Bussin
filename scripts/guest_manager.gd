@@ -184,4 +184,3 @@ func _on_guest_finished_eating(g: Guest) -> void:
 			other.walk_to(DOOR, "leaving")
 	table.party = []
 	GameState.add_cover(size)
-
