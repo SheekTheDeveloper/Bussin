@@ -24,19 +24,3 @@ func count(state: int) -> int:
 			n += 1
 	return n
 
-func total() -> int:
-	return dishes.size()
-
-func all_done() -> bool:
-	if dishes.is_empty():
-		return false
-	var any_clean := false
-	for d in dishes:
-		match d.state:
-			Dish.State.CLEAN:
-				any_clean = true
-			Dish.State.BROKEN:
-				pass
-			_:
-				return false
-	return any_clean

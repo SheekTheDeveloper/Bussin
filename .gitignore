@@ -8,6 +8,13 @@ export/
 *.pck
 *.zip
 
+# Blender auto-backups (Blender writes these next to the .blend on every save)
+*.blend1
+*.blend2
+
+# Export config can contain machine-local paths and signing details
+export_presets.cfg
+
 # OS junk
 Thumbs.db
 .DS_Store

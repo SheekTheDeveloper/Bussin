@@ -1,0 +1,21 @@
+# Normalize line endings so two machines don't produce whole-file diffs.
+# Text files are stored LF in the repo and checked out native on Windows.
+* text=auto
+
+# Godot text formats - always LF, so scene/script diffs stay readable.
+*.gd    text eol=lf
+*.tscn  text eol=lf
+*.tres  text eol=lf
+*.godot text eol=lf
+*.cfg   text eol=lf
+*.uid   text eol=lf
+*.md    text eol=lf
+
+# Binary - never diff or line-ending-convert these.
+*.glb   binary
+*.blend binary
+*.png   binary
+*.jpg   binary
+*.wav   binary
+*.ogg   binary
+*.mp3   binary
