@@ -51,16 +51,22 @@ Before you commit, all three:
    godot --headless --path . --quit
    ```
    Silence is success. Any `SCRIPT ERROR` / parse error means it's not done.
-2. **The soak harness still passes.**
+2. **Both soak harnesses still pass.** There is one per half of the loop.
    ```bash
+   # AI half: guests queue, get seated, order, eat, leave
    BUSSER_SOAK=1 godot --headless --path . res://scenes/levels/diner.tscn
+   # Player half: grab, hand-stack, tub scoop/carry/dump, machine, expo run
+   BUSSER_RETURN_SOAK=1 godot --headless --path . res://scenes/levels/diner.tscn
    ```
-   Ends with `SOAK FINAL: covers=N walkouts=N -> OK`. If it says `FAIL`, or
-   covers stops climbing, you've broken the seating/kitchen loop.
-3. **You actually ran it.** The soak only exercises the *AI half* (guests,
-   seating, cooking). It cannot press a button. Anything touching carrying,
-   grabbing, throwing, or washing must be played in-editor before you call it
-   done.
+   The first ends with `SOAK FINAL: covers=N walkouts=N -> OK` (if covers stops
+   climbing, you've broken seating or the kitchen). The second prints a
+   per-check PASS/FAIL table and ends `RETURN SOAK FINAL: OK`, **exiting 1 on
+   any failure** so it can gate CI. Run the return soak after touching
+   `dish.gd`, `bus_tub.gd`, `busser.gd`, or any station prop.
+3. **You actually ran it.** Neither harness can judge *feel*. They prove the
+   state machine is intact, not that carrying is fun or that reach angles are
+   comfortable. Anything touching movement, camera, or tuning constants must be
+   played in-editor before you call it done.
 
 For multiplayer changes, test with two windows: **Debug → Customize Run
 Instances → Enable Multiple Instances (2)**, then F5.
@@ -126,16 +132,18 @@ numbers into logic.
 
 ## Where the work is
 
-The **MVP gate** (GDD §7, §10) is a live in-editor playtest of the *return half*
-of the loop: table → tub/hand-stack → pit counter → dish machine → clean shelf →
-back to the pass. Every system is built and the AI half is proven by the soak
-harness, but a human has never driven the busser half end-to-end. Two things
-need sign-off in that same session:
+Both halves of the loop are now covered by harnesses, so the **logic** is
+proven. What's left at the MVP gate is **judgement**, which needs a human:
 
-- The tub-carry plate-attachment fix (code landed, live-unconfirmed).
-- The lobby's client-side roster repaint (host side wire-verified, client render
-  live-unconfirmed).
+- **Feel tuning.** Reach angles, carry speed, wobble, throw arcs, scoop stack
+  height. A harness can tell you a plate reached `AT_PIT`; it cannot tell you
+  that grabbing felt sticky. Constants are catalogued in GDD §9.
+- **The 2-instance client render.** The lobby's host side is wire-verified and
+  the client repaint rides RPC patterns already proven in shipped code, but
+  nobody has watched two windows agree. Run two instances and check the crew
+  roster, ready-gate, and held-dish visuals from the *client's* side.
 
-Do that first. It's the difference between "systems complete" and "loop proven,"
-and it'll likely surface the next real backlog. After that, GDD §11 has the
-ordered polish list - character models and hands/arms is next up.
+After that, GDD §11 has the ordered polish list. Realistically the biggest
+presentation gaps right now are **no audio at all** (no files, no
+`AudioStreamPlayer` anywhere) and **no first-person hands/arms** - the two
+things a viewer notices in the first ten seconds.

@@ -12,16 +12,16 @@ An **SMT Games** joint. Godot 4.7, typed GDScript.
 
 ## Controls
 
-| Keyboard / Mouse | Gamepad | Action |
-|---|---|---|
-| WASD | Left stick | Move |
-| Shift | L3 | Sprint (not while hauling a tub) |
-| Space | Cross | Jump |
-| Mouse | Right stick | Look |
-| LMB | R1 | Grab / drop - stack plates by hand, scoop dirties into a carried tub, or set the tub down (empty click recaptures the mouse) |
-| RMB | L1 | Throw the top plate (throw it hard enough and it *breaks* - permanently) |
-| E | Square | Interact - start the dish machine, dump a loaded tub at the pit |
-| Esc | Start | Pause ("ON BREAK") - resume, settings, or clock out |
+| Keyboard / Mouse | Gamepad     | Action                                                                                                                       |
+| ---------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| WASD             | Left stick  | Move                                                                                                                         |
+| Shift            | L3          | Sprint (not while hauling a tub)                                                                                             |
+| Space            | Cross       | Jump                                                                                                                         |
+| Mouse            | Right stick | Look                                                                                                                         |
+| LMB              | R1          | Grab / drop - stack plates by hand, scoop dirties into a carried tub, or set the tub down (empty click recaptures the mouse) |
+| RMB              | L1          | Throw the top plate (throw it hard enough and it _breaks_ - permanently)                                                     |
+| E                | Square      | Interact - start the dish machine, dump a loaded tub at the pit                                                              |
+| Esc              | Start       | Pause ("ON BREAK") - resume, settings, or clock out                                                                          |
 
 All key/mouse bindings, look sensitivity, invert-Y, master volume, and fullscreen live under **SHIFT SETTINGS** (in the breakroom menu or the pause overlay). Everything persists to `user://busser_settings.cfg`.
 
@@ -30,19 +30,19 @@ All key/mouse bindings, look sensitivity, invert-Y, master volume, and fullscree
 The diner runs itself; you keep plates moving through it. One **conserved pool
 of plates** cycles forever, and both halves of the loop need you:
 
-```
+```plain
   AI half:   guests queue at the door → seated at a READY table → kitchen pulls
              a CLEAN plate off the pass → cooks it → serves it → they eat & leave
   Your half: dirty plates left behind → bus them (hand-stack or bus tub) → pit
              counter → dish machine → clean shelf → run them back to the pass
 ```
 
-A table is only **READY** when it has no party *and* no dishes on it - so an
+A table is only **READY** when it has no party _and_ no dishes on it - so an
 unbussed table blocks seating, the queue backs up, and parties start walking
 out. If the pass runs dry the chef flashes red and nothing gets served.
 
 **The shift is 5:00 long.** You don't win by cleaning everything - you win by
-*surviving the clock*. Seating covers earns tips ($8.50/cover); smashing plates
+_surviving the clock_. Seating covers earns tips ($8.50/cover); smashing plates
 costs you ($6.00 each). Hit the walkout limit and you're **86'D** before the
 clock runs out.
 
@@ -56,11 +56,12 @@ winnable at any headcount instead of being impossible solo or trivial with four.
 - **Client-authoritative player movement** (MVP simplification - no prediction yet).
 - **The dish state machine** (`scenes/props/dish.gd`) is the whole economy. One conserved pool, nine states, one cycle:
 
-  ```
+  ```plain
   CLEAN → AT_PASS → COOKING → SERVED → DIRTY → AT_PIT → WASHING → CLEAN
   ```
 
   plus `HELD` (in a busser's hands or tub) and `BROKEN` (the only exit - the pool permanently shrinks). Read this enum first: almost every other system is just a query over it. The HUD counts it, the chef's alarm reads it, and the shift's money is derived from it.
+
 - **Derived state over replicated state.** Money is never stored or synced - `net_earnings()` recomputes it from the synced cover count and the `BROKEN` tally, so every peer arrives at the same dollars with zero extra network traffic. Prefer this pattern when adding readouts.
 - Autoloads: `Net` (connection lifecycle), `DishLedger` (pool registry/counts), `GameState` (shift clock + verdict), `Settings` (persistent options + input rebinds).
 - **Options/pause** are client-local: co-op is server-authoritative, so pausing never stops the sim - it just frees the cursor. The `SettingsPanel` overlay is one code-built component shared by the breakroom menu and the pause menu. See `Docs/Settings-Controls.md`.
@@ -68,7 +69,7 @@ winnable at any headcount instead of being impossible solo or trivial with four.
 
 ## Repo map
 
-```
+```plain
 scripts/autoload/     Globals, always loaded (see project.godot [autoload])
   net.gd              Connection lifecycle - host/join/solo, scene switching
   dish_ledger.gd      Registry of every Dish; count(state) is the query API
@@ -76,6 +77,7 @@ scripts/autoload/     Globals, always loaded (see project.godot [autoload])
   settings.gd         Persistent options + input rebinds (user://busser_settings.cfg)
 scripts/
   guest_manager.gd    Server-side host stand: spawn → queue → seat → walkout
+  return_soak.gd      Headless test of the player half (BUSSER_RETURN_SOAK=1)
 scenes/actors/
   busser.gd           The player. Client-auth movement, server-auth interaction
   guest.gd            AI diner. Server drives it; clients animate a bob locally
@@ -111,7 +113,7 @@ and bugs show up as desync, which is miserable to debug.
   `MultiplayerSynchronizer` streams the result out. It feels responsive; it's
   also trivially cheatable, which is fine for a co-op game with friends.
 - **Everything else is server-authoritative.** The client never mutates a dish,
-  tub, table, or guest directly. It sends an *intent* RPC to peer 1
+  tub, table, or guest directly. It sends an _intent_ RPC to peer 1
   (`_server_grab_or_drop`, `_server_throw`, `_server_interact`); the server
   validates, mutates, and the change replicates back down.
 
@@ -137,24 +139,34 @@ missing guard is the single most common bug in this codebase's history.
 
 - **Two windows on one PC:** Debug → Customize Run Instances → Enable Multiple
   Instances (2). See the run instructions at the top.
-- **Headless soak run:** there's an automated harness that boots the diner with
-  no window, feeds the pass, runs ~75 seconds of simulated service, and prints
-  telemetry. Use it to check you haven't broken the loop:
+- **Headless harnesses:** two automated runs, one per half of the loop. Both
+  boot the diner with no window and are completely inert unless their env var
+  is set.
 
   ```bash
+  # AI half - guests queue, seat, order, eat, leave (~75s of simulated service)
   BUSSER_SOAK=1 godot --headless --path . res://scenes/levels/diner.tscn
+
+  # Player half - grab, hand-stack, tub scoop/carry/dump, machine, expo run
+  BUSSER_RETURN_SOAK=1 godot --headless --path . res://scenes/levels/diner.tscn
   ```
 
-  It ends with `SOAK FINAL: covers=N walkouts=N -> OK` (or `FAIL` if no covers
-  were ever seated). The harness lives in `guest_manager.gd` and is completely
-  inert unless that env var is set.
+  The guest soak (in `guest_manager.gd`) prints telemetry and ends with
+  `SOAK FINAL: covers=N walkouts=N -> OK`. The return soak (in
+  `scripts/return_soak.gd`) drives a real `Busser` through the same server
+  entry points a client's intent RPCs land on, prints a per-check PASS/FAIL
+  table, ends `RETURN SOAK FINAL: OK`, and **exits 1 on any failure** so it can
+  gate CI.
+
+  Neither can judge *feel*. They prove the state machine is intact, not that
+  the game is fun to play.
 
 ## Conventions
 
 - **Typed GDScript everywhere.** `var x := 0`, `func f(a: int) -> void:`.
   Types catch the class of error that otherwise only shows up at runtime, in a
   build, in front of someone.
-- **Comment the *why*, not the *what*.** The existing comments explain why a
+- **Comment the _why_, not the _what_.** The existing comments explain why a
   collider gets muted while carried or why arrival is measured in straight-line
   distance instead of along the navmesh. Match that. Don't write `# add one to i`.
 - **Tune with named constants at the top of the file** (`WALK_SPEED`,
