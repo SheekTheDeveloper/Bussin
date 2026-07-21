@@ -143,6 +143,11 @@ audio and hands land, reopen D1 with evidence. Not before.
 
 ## M4 - Feel and collision tuning
 
+> **Scope stance (2026-07-20):** the mechanic set is CLOSED for MVP. Grab and
+> stack, tub carry, charged throw and catch, the wobble dial, the machine, four
+> vessel types. Work from here is depth on those, not breadth. New verbs and new
+> AI go to M5 or later.
+
 Queued behind M0 because the playtest generates this list, rather than guessing
 at it now.
 
@@ -152,6 +157,10 @@ at it now.
       are aiming at and what the button does (GDD pillar 3, "always legible").
 - [x] **Camera feel**: walk bob scaled by speed, landing dip, sprint FOV push.
 - [ ] Carry speed / wobble curve confirmed in a playtest
+- [x] **Polish pass on the existing mechanics**: dishes slide between stations
+      instead of popping, camera kick on pickup and on a nearby smash, and the
+      wobble warning now lands three ways at once (HUD, a visibly shearing
+      stack, and rising ceramic chatter).
 - [ ] Scoop stack height, throw arcs
 - [ ] Spray-wash minigame (GDD §8 "PowerWash-lite")
 - [ ] Wipe / place-setting reset step
@@ -197,6 +206,7 @@ Decisions get logged here with their cost, so they are not re-litigated.
 | D5 | MultiMesh for high-count props | **ACCEPTED** | Consistent with the optimization principle. |
 | D6 | Repo name `Bussin` vs game name `Busser` | **DEFERRED** | Names still in flux; deliberately left mismatched. |
 | D7 | Build §5 escalation content now | **REJECTED** | On the GDD §7 cut list. Revisit at M5. |
+| D8 | Runner/server AI carrying food to tables | **REJECTED 2026-07-20** | Real difficulty lever, but it adds a second AI competing for the same navmesh, a new stall state (food cold in the window), and a stuck-runner failure mode that reads as the player's fault. Scope is deliberately narrow: polish the few mechanics that exist rather than widen the sim. The kitchen keeps serving directly. |
 
 ---
 

@@ -15,6 +15,15 @@ enum State { DIRTY, HELD, AT_PIT, WASHING, CLEAN, BROKEN, AT_PASS, COOKING, SERV
 ## deliberate yeet does not. Retuned from 6.0, which every throw exceeded.
 const BREAK_SPEED := 7.5
 
+## States reached by being MOVED across the room rather than by being carried.
+## Gameplay teleports the body (it is simpler and keeps physics predictable),
+## so the art slides after it - otherwise a plate pops from the kitchen onto a
+## table, which is the least finished-looking moment in the loop.
+const SLIDE_STATES := [State.SERVED, State.CLEAN, State.COOKING, State.WASHING]
+const SLIDE_TIME := 0.34
+const SLIDE_MIN := 0.15   # below this it is a nudge, not a journey
+const SLIDE_MAX := 14.0   # above this it is a level reset, not a journey
+
 ## A thrower cannot re-catch its own plate for this long, or a throw would land
 ## straight back in your hands on the next frame.
 const CATCH_BLOCK_MS := 250
@@ -52,6 +61,10 @@ const HELD_FOLLOWS_PREVIOUS := true
 @export var start_state: State = State.DIRTY
 
 const STACK_STEP := 0.05             # vertical gap between plates in a hand-stack
+## How far the top of a maxed-out stack leans. Higher plates lean further, so
+## the stack visibly shears rather than tilting as a rigid block - you can see
+## which plate is about to go.
+const STACK_LEAN := 0.055
 
 var state: int = State.DIRTY: set = _set_state
 var holder: Busser = null            # server-side only
@@ -60,6 +73,10 @@ var hold_index := 0                  # server-side only; height in the holder's 
 var _state_before_hold: int = State.DIRTY
 var _thrown_by: Busser = null       # server-side; who launched it
 var _catch_block_until: int = 0     # server-side; ms ticks
+## Where this dish was last frame, on EVERY peer. The slide is derived from
+## replicated state plus this, so it needs no RPC of its own.
+var _prev_global := Vector3.ZERO
+var _slide: Tween = null
 
 @onready var visuals := get_node_or_null("Visuals") as DishVisuals
 @onready var shape := $Shape as CollisionShape3D
@@ -97,12 +114,21 @@ func _set_collision(on: bool) -> void:
 	set_deferred("collision_layer", _col_layer if on else 0)
 	set_deferred("collision_mask", _col_mask if on else 0)
 
+## Runs on every peer: remember where we were, so a state change that moved us
+## can be played as a slide instead of a pop.
+func _process(_delta: float) -> void:
+	_prev_global = global_position
+
 func _physics_process(_delta: float) -> void:
 	if multiplayer.is_server() and state == State.HELD and holder != null:
 		# Plates nest into a stack above the hold point, so a full expo run of
 		# clean plates rides in one hand instead of one trip each.
-		global_position = holder.hold_point.global_position + Vector3.UP * (hold_index * STACK_STEP)
-		global_rotation = Vector3(0.0, holder.rotation.y, 0.0)
+		# Lean scales with both the holder's wobble and this plate's height in the
+		# stack, so instability is visible before it is punishing.
+		var lean := holder.wobble * STACK_LEAN * float(hold_index)
+		var side := holder.global_transform.basis.x * lean
+		global_position = holder.hold_point.global_position 			+ Vector3.UP * (hold_index * STACK_STEP) + side
+		global_rotation = Vector3(0.0, holder.rotation.y, holder.wobble * -0.25)
 
 func is_grabbable() -> bool:
 	return state in [State.DIRTY, State.AT_PIT, State.CLEAN] and holder == null and in_tub == null
@@ -248,6 +274,10 @@ func _apply_visuals() -> void:
 	var shown := state
 	if HELD_FOLLOWS_PREVIOUS and state == State.HELD:
 		shown = _state_before_hold
+	if state in SLIDE_STATES:
+		_slide_visual_from(_prev_global)
+	if state == State.BROKEN:
+		_shake_nearby_busser()
 	var entry: Dictionary = STATE_PARTS.get(shown, {})
 	visuals.show_only(entry.get("parts", ["Body"]))
 	visuals.tint_body(entry.get("tint", Color.WHITE), entry.has("tint"))
@@ -255,6 +285,37 @@ func _apply_visuals() -> void:
 		visuals.apply_broken()
 	else:
 		visuals.clear_broken()
+
+## Park the art where the dish used to be and let it catch up. Purely cosmetic:
+## the body is already at its destination, so physics, gameplay and the harness
+## all see the final position immediately.
+func _slide_visual_from(from_global: Vector3) -> void:
+	if visuals == null or not is_node_ready():
+		return
+	var delta := from_global - global_position
+	var dist := delta.length()
+	if dist < SLIDE_MIN or dist > SLIDE_MAX:
+		return
+	if _slide != null and _slide.is_valid():
+		_slide.kill()
+	visuals.position = global_transform.basis.inverse() * delta
+	_slide = create_tween()
+	_slide.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_slide.tween_property(visuals, "position", Vector3.ZERO, SLIDE_TIME)
+
+## A plate smashing next to you should be felt, not just heard. Scales with
+## distance and dies off entirely across the room.
+func _shake_nearby_busser() -> void:
+	var me := Busser.local
+	if me == null or not is_instance_valid(me):
+		return
+	var dist := global_position.distance_to(me.global_position)
+	if dist > Busser.KICK_BREAK_RANGE:
+		return
+	var falloff := 1.0 - dist / Busser.KICK_BREAK_RANGE
+	var strength := Busser.KICK_BREAK_NEAR * falloff
+	me.add_kick(Vector3(randf_range(-strength, strength), -strength * 0.5, 0.0),
+		randf_range(-strength, strength) * 0.35)
 
 func _on_body_entered(body: Node) -> void:
 	if not multiplayer.is_server():

@@ -94,6 +94,7 @@ end, players recover the dirty end:
 - `wobble` is mirrored to the owning peer by RPC for its HUD, the same pattern as `carry_load`. It must never go on the body synchronizer, whose authority is the client.
 - The HUD WOBBLE meter now shows this real value for a hand-stack (it stays a fill gauge for a tub, which cannot spill).
 - Covered by the return-half harness: calm carry does not spill, violent carry does, a single plate never wobbles.
+- **The warning arrives three ways at once** so it can never be missed: the HUD meter turns red, the stack visibly **shears** (each plate leans further than the one below it, so you can see which one is about to go), and the ceramic starts to chatter, faster and higher-pitched the closer it gets. A player should be able to feel trouble coming without watching the meter.
 
 ### 4.7 Throwing and Catching - [AS-BUILT]
 - **Throws are specified as a speed, not an impulse.** Impulse divides by mass, which is how the original `THROW_FORCE = 6.5` on a 0.5 kg plate became a **13.3 m/s** launch against a 6 m/s break threshold: *every* throw shattered on contact, so passing a plate to a team-mate was impossible despite being called out as core fun.
@@ -121,6 +122,12 @@ end, players recover the dirty end:
 - Only the meshes, the collider and the mass differ, and mass stays near the plate's 0.5 on purpose: throw speed, `BREAK_SPEED` and the wobble curve are all tuned against it, so a mug must not quietly play by different physics.
 - Contents match the vessel: soup in the bowl, coffee in the mug, a drink in the glass. Shards are shared across all types for now (a broken thing is a broken thing); a glass-specific shard set is a later refinement.
 - Covered by the return-half harness: each variant exposes every part, registers in the conserved pool, is grabbable, and the level is confirmed to be serving a mix rather than twelve identical plates.
+
+### 4.11 Game Feel - [AS-BUILT]
+- **Dishes travel, they do not teleport.** Gameplay still moves the body instantly (simpler, and physics stays predictable), but the art is parked where the dish came from and slides after it over 0.34s. This covers the kitchen-to-table, pit-to-machine and machine-to-shelf moves, which were the least finished-looking moments in the loop. Derived from the replicated state change plus each peer's own memory of where the dish was, so it costs no networking and looks right on clients.
+- **The camera reacts.** A plate arriving in your hands gives a small downward nudge; a plate smashing near you shakes the view, scaled by distance and dead beyond 7m. Both are local and cosmetic. The smash shake is driven from the BROKEN transition, which every peer observes, so it needs no RPC.
+- Walk bob scales with speed, landing compresses the view, sprinting pushes FOV.
+- Everything here is presentation. None of it is replicated, none of it feeds back into gameplay, and all of it can be removed without touching the state machine.
 
 ### 4.5 Escalation / Content Axis - [VISION]
 - Restaurants as levels: Diner (tutorial) → Family Restaurant → Buffet (nightmare) → Fine Dining (fragile, white tablecloths) → Banquet Hall (event mode).

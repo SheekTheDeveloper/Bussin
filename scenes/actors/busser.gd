@@ -52,6 +52,10 @@ const WOBBLE_FROM_SPEED := 0.15    # per m/s of horizontal speed
 const WOBBLE_FROM_TURN := 0.5      # per rad/s of yaw change (whipping the camera)
 const WOBBLE_LAND_KICK := 0.3      # instant spike when you land a jump
 const WOBBLE_RELIEF := 0.45        # wobble remaining after a plate slides off
+## Above this the stack is audibly and visibly unstable. The HUD meter turns red
+## at the same point, so the warning arrives three ways at once.
+const WOBBLE_WARN := 0.6
+const WOBBLE_CREAK_GAP := 0.45     # seconds between warning creaks
 ## Motion is measured by differencing the transform, so a teleport (the
 ## fall-through-floor respawn, or a test harness moving the body) would read as
 ## an impossible speed and dump the stack for no reason. Clamp what we believe.
@@ -89,12 +93,23 @@ var _prev_pos := Vector3.ZERO
 var _prev_yaw := 0.0
 var _was_on_floor := true
 
+# --- Camera kick ------------------------------------------------------------
+# Small positional/rotational punches so actions land physically instead of just
+# changing a number. Entirely local and cosmetic; nothing here is replicated.
+const KICK_DECAY := 9.0        # how fast a kick settles
+const KICK_PICKUP := 0.035     # a plate arriving in your hands
+const KICK_BREAK_NEAR := 0.16  # a plate smashing next to you
+const KICK_BREAK_RANGE := 7.0  # beyond this a smash is somebody else's problem
+
 # Local-only camera feel state.
 var _head_base_y := 0.0
 var _bob_t := 0.0
 var _dip := 0.0
 var _base_fov := 75.0
 var _was_on_floor_local := true
+var _kick := Vector3.ZERO
+var _kick_roll := 0.0
+var _creak_t := 0.0
 ## 0..1 throw charge, local to the owning peer until it releases the button.
 var throw_charge: float = 0.0
 
@@ -165,6 +180,7 @@ func _physics_process(delta: float) -> void:
 	_update_camera_feel(delta)
 	_update_focus()
 	_update_throw_charge(delta)
+	_update_wobble_warning(delta)
 	var look := Input.get_vector("look_left", "look_right", "look_up", "look_down")
 	if look != Vector2.ZERO:
 		var stick := STICK_LOOK_SPEED * Settings.stick_sensitivity * delta
@@ -288,8 +304,31 @@ func _update_camera_feel(delta: float) -> void:
 	_dip = lerpf(_dip, 0.0, 8.0 * delta)
 	head.position.y -= _dip
 
+	# Kicks settle back to neutral and are applied on top of bob and dip.
+	_kick = _kick.lerp(Vector3.ZERO, minf(KICK_DECAY * delta, 1.0))
+	_kick_roll = lerpf(_kick_roll, 0.0, minf(KICK_DECAY * delta, 1.0))
+	head.position.y += _kick.y
+	head.position.x = _kick.x
+	camera.rotation.z = _kick_roll
+
 	var sprinting := flat_speed > WALK_SPEED + 0.4 and carry_load < 0
 	camera.fov = lerpf(camera.fov, _base_fov + (6.0 if sprinting else 0.0), 6.0 * delta)
+
+## Local-only. A stack about to go reads as ceramic starting to chatter, rising
+## in pitch as it gets worse. The player should be able to hear trouble coming
+## without watching the meter.
+func _update_wobble_warning(delta: float) -> void:
+	if stack_load < 2 or wobble < WOBBLE_WARN:
+		_creak_t = 0.0
+		return
+	_creak_t -= delta
+	if _creak_t > 0.0:
+		return
+	# Tighter gap and higher pitch the closer the stack is to spilling.
+	var severity := inverse_lerp(WOBBLE_WARN, WOBBLE_MAX, wobble)
+	_creak_t = lerpf(WOBBLE_CREAK_GAP, WOBBLE_CREAK_GAP * 0.45, severity)
+	Audio.play_3d(&"clatter_light", hold_point.global_position,
+		-14.0 + severity * 6.0, 1.25 + severity * 0.35, 0.06)
 
 ## Local-only. Turns whatever the reach ray is on into a HUD prompt, using only
 ## replicated state (dish state, our own mirrored stack/carry counts), so the
@@ -419,6 +458,8 @@ func _recv_carry_load(value: int) -> void:
 
 ## Same owner-sync path as carry_load, for the hand-stack plate count.
 func server_set_stack(value: int) -> void:
+	if value > stack_load:
+		_on_gained_plate()
 	stack_load = value
 	var owner_id := get_multiplayer_authority()
 	if owner_id != multiplayer.get_unique_id():
@@ -427,7 +468,21 @@ func server_set_stack(value: int) -> void:
 @rpc("any_peer", "call_remote", "reliable")
 func _recv_stack_load(value: int) -> void:
 	if multiplayer.get_remote_sender_id() == 1:  # only trust the server
+		if value > stack_load:
+			_on_gained_plate()
 		stack_load = value
+
+## A plate landed in your hands - picked up, or caught out of the air. Both
+## deserve the same small physical acknowledgement. Owner-only: this fires on
+## whichever peer actually owns the busser, host or client alike.
+func _on_gained_plate() -> void:
+	if is_multiplayer_authority():
+		add_kick(Vector3(0.0, -KICK_PICKUP, 0.0), 0.0)
+
+## Push the camera. `offset` is in head-local metres, `roll` in radians.
+func add_kick(offset: Vector3, roll: float) -> void:
+	_kick += offset
+	_kick_roll += roll
 
 ## Local: build charge while the button is held, and fire on release. Polled
 ## rather than event-driven so a tap and a long hold read the same way.
