@@ -108,6 +108,40 @@ synced cover count and the dish pool, so it costs zero network traffic and can
 never desync. Connect to `GameState.stats_changed` or `DishLedger.changed`
 rather than polling in `_process` where you can.
 
+### Adding or changing a 3D asset
+
+The pipeline is Blender -> GLB -> Godot. In Blender: keep the object's origin
+where the thing logically attaches (a plate part shares the plate's origin, a
+floor prop sits at ground-centre), then export selected-only with
+`export_apply=True` and `export_yup=True`.
+
+**After adding a new `.glb` you must force an import:**
+
+```bash
+godot --headless --path . --import
+```
+
+`--quit` alone does NOT pick up new source files - it scans, but will happily
+leave a brand new `.glb` without its `.import` sidecar, and then any scene
+referencing it silently loses those nodes. Check for the sidecar:
+`ls assets/models/*.import`.
+
+The same applies to a new `class_name`: the first import registers the class,
+and scripts that reference it only compile on the *second* pass. If a fresh
+`class_name` errors with "Could not find type", just run the import again.
+
+### Adding a dish state visual
+
+`Dish.STATE_PARTS` maps each state to the visual parts it shows plus an
+optional tint. `DishVisuals` (a `Visuals` node under the dish) resolves those
+parts by NAME against its children and skips missing ones, so art can land one
+piece at a time and a typo degrades to an invisible part rather than a crash.
+
+Rule of thumb: states the player reads across the room get real geometry
+(grime, food, shards); brief pipeline states they read from LOCATION instead
+(WASHING, AT_PASS) keep a tint, which costs no art. When a state gets real
+geometry, drop its `tint` key - nothing else changes.
+
 ### Adding a sound
 
 1. Drop the file in `assets/audio/` and add an id to `Audio.SOUNDS`.

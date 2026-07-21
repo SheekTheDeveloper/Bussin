@@ -19,19 +19,33 @@ const BREAK_SPEED := 7.5
 ## straight back in your hands on the next frame.
 const CATCH_BLOCK_MS := 250
 
-const STATE_COLORS := {
-	State.DIRTY: Color(0.45, 0.31, 0.18),
-	State.HELD: Color(0.55, 0.4, 0.25),
-	State.AT_PIT: Color(0.78, 0.52, 0.2),
-	State.WASHING: Color(0.35, 0.55, 0.9),
-	State.CLEAN: Color(0.95, 0.95, 0.92),
-	State.BROKEN: Color(0.18, 0.18, 0.18),
-	State.AT_PASS: Color(0.85, 0.9, 0.95),
-	State.COOKING: Color(0.95, 0.45, 0.15),
-	State.SERVED: Color(0.72, 0.5, 0.2),   # food on the plate
+## What each state LOOKS like: which visual parts are shown, and an optional
+## tint for the plate body.
+##
+## The rule: states the player reads at a glance across the room get real
+## geometry (grime on a dirty plate, food on a served one, shards on a broken
+## one). States that are brief and read from LOCATION instead - it is in the
+## machine, it is on the pass - keep a tint, which costs no art. As real meshes
+## land, drop the tint from that row; nothing else has to change.
+##
+## Parts are resolved by name against the Visuals subtree and missing ones are
+## skipped, so this table can name art that does not exist yet.
+const STATE_PARTS := {
+	State.CLEAN:   {"parts": ["Plate"]},
+	State.AT_PASS: {"parts": ["Plate"], "tint": Color(0.85, 0.9, 0.95)},
+	State.COOKING: {"parts": ["Plate", "Food"], "tint": Color(0.95, 0.45, 0.15)},
+	State.SERVED:  {"parts": ["Plate", "Food"]},
+	State.DIRTY:   {"parts": ["Plate", "Grime"]},
+	State.HELD:    {"parts": ["Plate", "Grime"]},
+	State.AT_PIT:  {"parts": ["Plate", "Grime"], "tint": Color(0.78, 0.52, 0.2)},
+	State.WASHING: {"parts": ["Plate"], "tint": Color(0.35, 0.55, 0.9)},
+	State.BROKEN:  {"parts": ["Shards"], "tint": Color(0.18, 0.18, 0.18)},
 }
 
-static var _materials: Dictionary = {}
+## HELD keeps whatever the plate already looked like, so picking a clean plate up
+## does not make it look dirty in your hands. Resolved at apply time from the
+## state it was in before the pickup.
+const HELD_FOLLOWS_PREVIOUS := true
 
 ## The state a scene-placed dish starts in. Plates pre-staged on the clean
 ## counter want CLEAN; loose dirties on a table want DIRTY (the default).
@@ -47,7 +61,7 @@ var _state_before_hold: int = State.DIRTY
 var _thrown_by: Busser = null       # server-side; who launched it
 var _catch_block_until: int = 0     # server-side; ms ticks
 
-@onready var mesh: MeshInstance3D = find_children("*", "MeshInstance3D", true, false)[0]
+@onready var visuals := get_node_or_null("Visuals") as DishVisuals
 @onready var shape := $Shape as CollisionShape3D
 
 var _col_layer := 1
@@ -212,11 +226,27 @@ func _play_state_sound(value: int) -> void:
 	Audio.play_3d(entry[0], global_position, entry[1])
 
 func _apply_state() -> void:
-	mesh.material_override = _material_for(state)
+	_apply_visuals()
 	if state == State.BROKEN:
-		mesh.scale = Vector3(1.3, 0.15, 1.3)
 		shape.set_deferred("disabled", true)
 		freeze = true
+
+## Presentation only. Gameplay never reads this back.
+func _apply_visuals() -> void:
+	if visuals == null:
+		return
+	# A held plate looks like whatever it was before it was picked up, so a clean
+	# plate stays clean-looking in your hands.
+	var shown := state
+	if HELD_FOLLOWS_PREVIOUS and state == State.HELD:
+		shown = _state_before_hold
+	var entry: Dictionary = STATE_PARTS.get(shown, {})
+	visuals.show_only(entry.get("parts", ["Plate"]))
+	visuals.tint_plate(entry.get("tint", Color.WHITE), entry.has("tint"))
+	if state == State.BROKEN:
+		visuals.apply_broken()
+	else:
+		visuals.clear_broken()
 
 func _on_body_entered(body: Node) -> void:
 	if not multiplayer.is_server():
@@ -228,9 +258,3 @@ func _on_body_entered(body: Node) -> void:
 	if state == State.CLEAN and body.is_in_group("dirties_dishes"):
 		state = State.DIRTY
 
-func _material_for(s: int) -> StandardMaterial3D:
-	if not _materials.has(s):
-		var m := StandardMaterial3D.new()
-		m.albedo_color = STATE_COLORS[s]
-		_materials[s] = m
-	return _materials[s]

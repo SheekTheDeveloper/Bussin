@@ -102,6 +102,13 @@ end, players recover the dirty end:
 - This is the "collisions of responsibility" pillar in mechanical form: one busser can clear a table and pass plates across the pit to another rather than both walking the same loop.
 - Covered by the return-half harness: speeds straddle the break threshold, a tap leaves at pass speed, a plate in flight is catchable, a resting one is not, and catching fills the hand-stack.
 
+### 4.8 Dish Visuals - [AS-BUILT]
+- A plate's look is a **swappable subtree** (`Visuals`, driven by `DishVisuals`), not a tint on one mesh. `Dish.STATE_PARTS` says which parts each state shows; `DishVisuals` resolves them by name and skips any that are missing, so art lands incrementally and a missing part degrades to invisible rather than crashing.
+- Shipped parts: **Plate** (ceramic body), **Grime** (scraps and a sauce smear, on DIRTY / HELD / AT_PIT), **Food** (burger and fries, on SERVED / COOKING), **Shards** (nine scattered fragments, replacing the plate on BROKEN).
+- **Geometry where it is read, tint where it is not.** States a player judges across the room get real meshes; brief pipeline states they read from location instead (WASHING in the machine, AT_PASS on the pass) keep a colour tint, which costs no art. Dropping a tint is all it takes to promote a state to real geometry later.
+- A HELD plate keeps the look it had before pickup, so a clean plate does not turn grimy in your hands.
+- Covered by the return-half harness: every part exists and CLEAN / DIRTY / SERVED / BROKEN each show exactly the right set.
+
 ### 4.5 Escalation / Content Axis - [VISION]
 - Restaurants as levels: Diner (tutorial) → Family Restaurant → Buffet (nightmare) → Fine Dining (fragile, white tablecloths) → Banquet Hall (event mode).
 - Modifiers: broken dish machine (hand-wash only), short-staffed kitchen, health-inspector audit, rain (muddy footprints).

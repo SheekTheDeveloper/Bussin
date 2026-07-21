@@ -1,7 +1,11 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scenes/props/dish.gd" id="1_dish"]
 [ext_resource type="PackedScene" path="res://assets/models/plate.glb" id="2_model"]
+[ext_resource type="Script" path="res://scenes/props/dish_visuals.gd" id="3_visuals"]
+[ext_resource type="PackedScene" path="res://assets/models/grime.glb" id="4_grime"]
+[ext_resource type="PackedScene" path="res://assets/models/food.glb" id="5_food"]
+[ext_resource type="PackedScene" path="res://assets/models/shards.glb" id="6_shards"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_dish"]
 radius = 0.13
@@ -25,7 +29,19 @@ contact_monitor = true
 max_contacts_reported = 4
 script = ExtResource("1_dish")
 
-[node name="Model" parent="." instance=ExtResource("2_model")]
+[node name="Visuals" type="Node3D" parent="."]
+script = ExtResource("3_visuals")
+
+[node name="Plate" parent="Visuals" instance=ExtResource("2_model")]
+
+[node name="Grime" parent="Visuals" instance=ExtResource("4_grime")]
+visible = false
+
+[node name="Food" parent="Visuals" instance=ExtResource("5_food")]
+visible = false
+
+[node name="Shards" parent="Visuals" instance=ExtResource("6_shards")]
+visible = false
 
 [node name="Shape" type="CollisionShape3D" parent="."]
 shape = SubResource("CylinderShape3D_dish")

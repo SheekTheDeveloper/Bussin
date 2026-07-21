@@ -104,6 +104,10 @@ A floating camera with no hands is the second thing a viewer notices.
 
 ## M3 - Art direction: low-poly, sharpened (D1 SETTLED 2026-07-20)
 
+- [x] **State-driven dish visuals** (`DishVisuals`) plus the first three part
+      meshes: grime, food, shards. The plate is no longer one tinted mesh, so
+      per-state art can land incrementally. See GDD 4.8.
+
 **We are staying low-poly.** The optimization principle holds: many machines,
 low-end machines, atmosphere carried by lighting and post rather than by
 polygons and shaders. Mid-poly + shader work is **not** happening now.

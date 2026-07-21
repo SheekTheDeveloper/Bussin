@@ -161,6 +161,7 @@ func _run() -> void:
 	await _test_tub_path(busser)
 	await _test_stack_wobble(busser)
 	await _test_throw_and_catch(busser)
+	await _test_dish_visuals()
 
 	print("=== RETURN SOAK: %d/%d checks passed ===" % [_checks - _failures, _checks])
 	print("RETURN SOAK FINAL: %s" % ("OK" if _failures == 0 else "FAIL"))
@@ -356,6 +357,38 @@ func _test_throw_and_catch(busser: Busser) -> void:
 	_check("catching adds the plate to the stack",
 		plate.holder == busser and busser.stack_load == 1,
 		"holder=%s stack=%d" % [str(plate.holder != null), busser.stack_load])
+
+## Per-state dish visuals. Art being present in assets/ proves nothing; this
+## checks the parts actually toggle, so a renamed node or a broken export shows
+## up here instead of as an invisible plate somebody notices in a playtest.
+func _test_dish_visuals() -> void:
+	print("[7] dish visuals: parts per state")
+	var plate := DishLedger.dishes[0] as Dish
+	var vis := plate.get_node_or_null("Visuals") as DishVisuals
+	if vis == null:
+		_check("dish has a Visuals subtree", false)
+		return
+	for part in ["Plate", "Grime", "Food", "Shards"]:
+		_check("visual part '%s' exists" % part, vis.has_part(part))
+
+	var cases := [
+		{"state": Dish.State.CLEAN, "on": ["Plate"], "off": ["Grime", "Food", "Shards"]},
+		{"state": Dish.State.DIRTY, "on": ["Plate", "Grime"], "off": ["Food", "Shards"]},
+		{"state": Dish.State.SERVED, "on": ["Plate", "Food"], "off": ["Grime", "Shards"]},
+		{"state": Dish.State.BROKEN, "on": ["Shards"], "off": ["Plate", "Grime", "Food"]},
+	]
+	for case in cases:
+		plate.state = case["state"]
+		await get_tree().process_frame
+		var name := _state_name(case["state"])
+		var wrong := PackedStringArray()
+		for part in case["on"]:
+			if not (vis.get_node(part) as Node3D).visible:
+				wrong.append("%s should show" % part)
+		for part in case["off"]:
+			if (vis.get_node(part) as Node3D).visible:
+				wrong.append("%s should hide" % part)
+		_check("%s shows the right parts" % name, wrong.is_empty(), ", ".join(wrong))
 
 ## The bus-tub path, including a regression check on the fix from GDD 10:
 ## stowed plates must stay nested in the tub after it is SET DOWN, not float
