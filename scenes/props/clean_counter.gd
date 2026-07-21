@@ -11,5 +11,7 @@ func next_spot() -> Vector3:
 	var col := _count % 4
 	var row := floori(_count / 4.0)
 	_count += 1
-	var local_offset := Vector3(-0.35 + (row % 3) * 0.35, 0.03 + floori(row / 3.0) * 0.05, -0.9 + col * 0.6)
+	# Returns the SHELF SURFACE; the Dish adds its own base_offset when it lands,
+	# so tall and flat vessels both rest on the shelf.
+	var local_offset := Vector3(-0.35 + (row % 3) * 0.35, 0.012 + floori(row / 3.0) * 0.05, -0.9 + col * 0.6)
 	return base.global_position + base.global_transform.basis * local_offset

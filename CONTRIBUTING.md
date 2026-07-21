@@ -115,6 +115,22 @@ where the thing logically attaches (a plate part shares the plate's origin, a
 floor prop sits at ground-centre), then export selected-only with
 `export_apply=True` and `export_yup=True`.
 
+**Zero the object's location before exporting.** glTF writes the object's
+Blender world position into the node translation, so an object exported while
+sitting at (0.3, 0.1, 0.82) lands 0.82m off in Godot. Park it at the world
+origin for the export and put it back afterwards:
+
+```python
+saved = o.location[:]
+o.location = (0, 0, 0)
+bpy.ops.export_scene.gltf(filepath=path, use_selection=True,
+                          export_apply=True, export_yup=True)
+o.location = saved
+```
+
+This cost a round of floating food and floating cups. The harness now checks
+for it (section 9, "art is centred on the vessel").
+
 **After adding a new `.glb` you must force an import:**
 
 ```bash
@@ -141,6 +157,13 @@ Rule of thumb: states the player reads across the room get real geometry
 (grime, food, shards); brief pipeline states they read from LOCATION instead
 (WASHING, AT_PASS) keep a tint, which costs no art. When a state gets real
 geometry, drop its `tint` key - nothing else changes.
+
+### Placing something on a surface
+
+Placement functions pass the **surface height**, and the object lifts itself by
+its own `base_offset`. `Dish` derives that from its collider, so a flat plate
+and a tall glass both rest ON a counter. Do not hard-code a height that happens
+to look right for one vessel - that is how a glass ends up sunk into the shelf.
 
 ### Adding a sound
 

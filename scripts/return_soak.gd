@@ -163,6 +163,7 @@ func _run() -> void:
 	await _test_throw_and_catch(busser)
 	await _test_dish_visuals()
 	await _test_dish_variants()
+	await _test_dish_placement()
 
 	print("=== RETURN SOAK: %d/%d checks passed ===" % [_checks - _failures, _checks])
 	print("RETURN SOAK FINAL: %s" % ("OK" if _failures == 0 else "FAIL"))
@@ -436,6 +437,52 @@ func _test_dish_variants() -> void:
 	_check("the pool is still 12 dishes", DishLedger.dishes.size() == 12,
 		"%d" % DishLedger.dishes.size())
 	_check("the pool has more than one vessel type", kinds.size() > 1, str(kinds))
+
+## Vessels must SIT on surfaces, and their art must sit on them.
+##
+## Both halves of this caught real bugs. A glTF export carries the object's
+## Blender world position as a node translation, which floated every part about
+## 0.82m above where it belonged; and placement code written for a flat plate
+## sank a tall glass into the counter. Neither is visible to a state-machine
+## test, so they get their own checks.
+func _test_dish_placement() -> void:
+	print("[9] placement: vessels rest on surfaces, art sits on vessels")
+	var scenes := ["res://scenes/props/dish.tscn", "res://scenes/props/dish_bowl.tscn",
+			"res://scenes/props/dish_mug.tscn", "res://scenes/props/dish_glass.tscn"]
+	const SURFACE_Y := 1.0
+	for path in scenes:
+		var label: String = path.get_file().get_basename()
+		var inst := (load(path) as PackedScene).instantiate() as Dish
+		add_child(inst)
+		await get_tree().process_frame
+
+		# Art must be authored at the vessel's own origin. A non-zero offset here
+		# means the GLB kept a node translation from wherever it sat in Blender.
+		var vis := inst.get_node_or_null("Visuals")
+		var drifted := PackedStringArray()
+		if vis != null:
+			for child in vis.get_children():
+				if child is Node3D and (child as Node3D).position.length() > 0.02:
+					drifted.append("%s at %s" % [child.name, str((child as Node3D).position)])
+		_check("%s art is centred on the vessel" % label, drifted.is_empty(), ", ".join(drifted))
+
+		_check("%s reports a base offset" % label, inst.base_offset > 0.0,
+			"%.4f" % inst.base_offset)
+
+		# Serving and washing both position by SURFACE, so the base should land
+		# exactly on it whatever the vessel's height.
+		inst.serve_at(Vector3(0.0, SURFACE_Y, 0.0))
+		var served_base: float = inst.global_position.y - inst.base_offset
+		_check("%s rests on the table when served" % label,
+			absf(served_base - SURFACE_Y) < 0.002, "base at %.4f" % served_base)
+
+		inst.finish_wash(Vector3(0.0, SURFACE_Y, 0.0))
+		var washed_base: float = inst.global_position.y - inst.base_offset
+		_check("%s rests on the shelf when washed" % label,
+			absf(washed_base - SURFACE_Y) < 0.002, "base at %.4f" % washed_base)
+
+		inst.queue_free()
+		await get_tree().process_frame
 
 ## The bus-tub path, including a regression check on the fix from GDD 10:
 ## stowed plates must stay nested in the tub after it is SET DOWN, not float

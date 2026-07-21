@@ -246,11 +246,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.65, 0.95, 1.8)
 start_state = 4
 
 [node name="Dish4" parent="Dishes" unique_id=977219617 instance=ExtResource("21_bowl")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.95, 0.95, 2.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.95, 0.9600, 2.4)
 start_state = 4
 
 [node name="Dish5" parent="Dishes" unique_id=1941172175 instance=ExtResource("22_mug")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0.95, 2.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0.9800, 2.4)
 start_state = 4
 
 [node name="Dish6" parent="Dishes" unique_id=1353757759 instance=ExtResource("3_dish")]
@@ -258,11 +258,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.65, 0.95, 2.4)
 start_state = 4
 
 [node name="Dish7" parent="Dishes" unique_id=1459985594 instance=ExtResource("21_bowl")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.95, 0.95, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.95, 0.9600, 3)
 start_state = 4
 
 [node name="Dish8" parent="Dishes" unique_id=1126097970 instance=ExtResource("23_glass")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0.95, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0.9900, 3)
 start_state = 4
 
 [node name="Dish9" parent="Dishes" unique_id=1764698837 instance=ExtResource("3_dish")]
@@ -270,11 +270,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.65, 0.95, 3)
 start_state = 4
 
 [node name="Dish10" parent="Dishes" unique_id=266953938 instance=ExtResource("21_bowl")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.95, 0.95, 3.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.95, 0.9600, 3.6)
 start_state = 4
 
 [node name="Dish11" parent="Dishes" unique_id=79855965 instance=ExtResource("22_mug")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0.95, 3.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.3, 0.9800, 3.6)
 start_state = 4
 
 [node name="Dish12" parent="Dishes" unique_id=145255403 instance=ExtResource("3_dish")]

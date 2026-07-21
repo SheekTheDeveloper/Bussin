@@ -64,12 +64,20 @@ var _catch_block_until: int = 0     # server-side; ms ticks
 @onready var visuals := get_node_or_null("Visuals") as DishVisuals
 @onready var shape := $Shape as CollisionShape3D
 
+## How far this vessel's origin sits above its base, taken from its own
+## collider. Placement code positions the SURFACE and each dish lifts itself by
+## this, so a tall glass and a flat plate both rest ON a counter instead of a
+## plate-shaped guess sinking the glass and floating nothing.
+var base_offset: float = 0.0
+
 var _col_layer := 1
 var _col_mask := 1
 
 func _ready() -> void:
 	_col_layer = collision_layer
 	_col_mask = collision_mask
+	var cyl := shape.shape as CylinderShape3D
+	base_offset = cyl.height * 0.5 if cyl != null else 0.0
 	DishLedger.register(self)
 	body_entered.connect(_on_body_entered)
 	if not multiplayer.is_server():
@@ -175,9 +183,9 @@ func begin_wash(machine_pos: Vector3) -> void:
 	global_position = machine_pos
 	state = State.WASHING
 
-func finish_wash(shelf_pos: Vector3) -> void:
+func finish_wash(surface_pos: Vector3) -> void:
 	freeze = true
-	global_position = shelf_pos
+	global_position = surface_pos + Vector3.UP * base_offset
 	global_rotation = Vector3.ZERO
 	state = State.CLEAN
 
@@ -186,9 +194,9 @@ func begin_cook(cook_pos: Vector3) -> void:
 	global_position = cook_pos
 	state = State.COOKING
 
-func serve_at(spot: Vector3) -> void:
+func serve_at(surface_pos: Vector3) -> void:
 	freeze = true
-	global_position = spot
+	global_position = surface_pos + Vector3.UP * base_offset
 	global_rotation = Vector3.ZERO
 	state = State.SERVED
 
