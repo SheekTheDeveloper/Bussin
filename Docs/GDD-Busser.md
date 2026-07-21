@@ -115,6 +115,13 @@ end, players recover the dirty end:
 - **Every furnishing is a `StaticBody3D` in the `nav_geo` group**, so the runtime navmesh bake routes guests around it. Anything with collision added to this room MUST join that group or guests will walk through it; anything purely cosmetic must NOT have collision at all (see `DinerDecor`, which is colliderless by design).
 - Deliberately **not** added: booths or counter seating in the guest area. A seat a player cannot seat a party at reads as a bug, so dressing is kept to the entry, the pit side, and the kitchen backdrop.
 
+### 4.10 Dish Variety - [AS-BUILT]
+- The pool ships **12 vessels: 6 plates, 3 bowls, 2 mugs, 1 glass**. **The COUNT is a balance constant** - the economy is conserved and scarcity is the pressure, so adding vessels makes every shift easier. Variety is a content axis and changes nothing mechanically; do not conflate the two.
+- Every type is **one scene sharing `dish.gd`**. The visual part names (`Body` / `Grime` / `Food` / `Shards`) are identical across types, so all of them run the same `STATE_PARTS` table. Adding a dish type is art plus a scene, never new logic.
+- Only the meshes, the collider and the mass differ, and mass stays near the plate's 0.5 on purpose: throw speed, `BREAK_SPEED` and the wobble curve are all tuned against it, so a mug must not quietly play by different physics.
+- Contents match the vessel: soup in the bowl, coffee in the mug, a drink in the glass. Shards are shared across all types for now (a broken thing is a broken thing); a glass-specific shard set is a later refinement.
+- Covered by the return-half harness: each variant exposes every part, registers in the conserved pool, is grabbable, and the level is confirmed to be serving a mix rather than twelve identical plates.
+
 ### 4.5 Escalation / Content Axis - [VISION]
 - Restaurants as levels: Diner (tutorial) → Family Restaurant → Buffet (nightmare) → Fine Dining (fragile, white tablecloths) → Banquet Hall (event mode).
 - Modifiers: broken dish machine (hand-wash only), short-staffed kitchen, health-inspector audit, rain (muddy footprints).
@@ -182,6 +189,7 @@ end, players recover the dirty end:
 | Tip per cover | $8.50 | `GameState.TIP_PER_COVER` |
 | Breakage fee | $6.00 | `GameState.BREAKAGE_FEE` |
 | Shift goal | $500 | **[VISION] not implemented** - see §4.4 |
+| Dish pool size | 12 (6 plate / 3 bowl / 2 mug / 1 glass) | `diner.tscn` - **balance constant, not content** |
 | Bus tub capacity | 6 | `BusTub.CAPACITY` |
 | Hand-stack capacity | 5 plates | `Busser.STACK_MAX` (grab to add, grab-away to set down, throw = top plate) |
 | Plate break speed | 7.5 m/s | `Dish.BREAK_SPEED` |

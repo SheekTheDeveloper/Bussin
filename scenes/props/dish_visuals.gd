@@ -9,36 +9,36 @@ extends Node3D
 ## upgrades stay possible.
 ##
 ## Parts are child Node3Ds looked up BY NAME. Every one is optional: a missing
-## part is skipped, so the plate still works with only the base mesh present and
+## part is skipped, so a vessel still works with only its base mesh present and
 ## art can land one piece at a time. Conventional names:
 ##
-##   Plate    the ceramic body, visible in nearly every state
-##   Grime    leftover food and smears, on top of the plate when dirty
-##   Food     a served meal sitting on the plate
-##   Shards   the broken remains, replacing the plate entirely
+##   Body     the vessel itself (plate, bowl, mug, glass)
+##   Grime    leftover food and smears, sitting in or on the vessel when dirty
+##   Food     what was served in it (a meal, a soup, a drink)
+##   Shards   the broken remains, replacing the body entirely
 ##
 ## The tint is a fallback, not the goal. Pipeline states a player only ever sees
 ## for a moment (WASHING, COOKING) stay readable by colour instead of costing a
 ## bespoke mesh; states the player actually reads at a glance get real geometry.
 
-## Squash applied to the plate when it breaks and no Shards mesh exists yet, so
-## a broken plate still reads as broken before that art lands.
+## Squash applied to the body when it breaks and no Shards mesh exists yet, so
+## a broken vessel still reads as broken before that art lands.
 const FALLBACK_BROKEN_SCALE := Vector3(1.3, 0.15, 1.3)
 
 static var _tint_cache: Dictionary = {}
 
 var _parts: Dictionary = {}          # String -> Node3D
-var _plate_meshes: Array[MeshInstance3D] = []
-var _plate_base_scale := Vector3.ONE
+var _body_meshes: Array[MeshInstance3D] = []
+var _body_base_scale := Vector3.ONE
 
 func _ready() -> void:
 	for child in get_children():
 		if child is Node3D:
 			_parts[String(child.name)] = child
-	var plate := _parts.get("Plate") as Node3D
-	if plate != null:
-		_plate_base_scale = plate.scale
-		_plate_meshes.assign(plate.find_children("*", "MeshInstance3D", true, false))
+	var body := _parts.get("Body") as Node3D
+	if body != null:
+		_body_base_scale = body.scale
+		_body_meshes.assign(body.find_children("*", "MeshInstance3D", true, false))
 
 func has_part(part_name: String) -> bool:
 	return _parts.has(part_name)
@@ -49,10 +49,10 @@ func show_only(names: Array) -> void:
 	for key in _parts:
 		(_parts[key] as Node3D).visible = key in names
 
-## Tint the plate body. `enabled` false clears the override so authored
+## Tint the vessel body. `enabled` false clears the override so authored
 ## materials show through untouched - once real per-state art exists, the tint
 ## should simply stop being requested.
-func tint_plate(color: Color, enabled: bool) -> void:
+func tint_body(color: Color, enabled: bool) -> void:
 	var mat: StandardMaterial3D = null
 	if enabled:
 		if not _tint_cache.has(color):
@@ -60,21 +60,21 @@ func tint_plate(color: Color, enabled: bool) -> void:
 			m.albedo_color = color
 			_tint_cache[color] = m
 		mat = _tint_cache[color]
-	for mi in _plate_meshes:
+	for mi in _body_meshes:
 		mi.material_override = mat
 
 ## Called when the dish breaks. Uses real shard geometry when it exists and
-## falls back to squashing the plate when it does not.
+## falls back to squashing the body when it does not.
 func apply_broken() -> void:
-	var plate := _parts.get("Plate") as Node3D
-	if plate == null:
+	var body := _parts.get("Body") as Node3D
+	if body == null:
 		return
 	if has_part("Shards"):
-		plate.scale = _plate_base_scale
+		body.scale = _body_base_scale
 	else:
-		plate.scale = _plate_base_scale * FALLBACK_BROKEN_SCALE
+		body.scale = _body_base_scale * FALLBACK_BROKEN_SCALE
 
 func clear_broken() -> void:
-	var plate := _parts.get("Plate") as Node3D
-	if plate != null:
-		plate.scale = _plate_base_scale
+	var body := _parts.get("Body") as Node3D
+	if body != null:
+		body.scale = _body_base_scale

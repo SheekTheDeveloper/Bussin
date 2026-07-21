@@ -162,6 +162,7 @@ func _run() -> void:
 	await _test_stack_wobble(busser)
 	await _test_throw_and_catch(busser)
 	await _test_dish_visuals()
+	await _test_dish_variants()
 
 	print("=== RETURN SOAK: %d/%d checks passed ===" % [_checks - _failures, _checks])
 	print("RETURN SOAK FINAL: %s" % ("OK" if _failures == 0 else "FAIL"))
@@ -368,14 +369,14 @@ func _test_dish_visuals() -> void:
 	if vis == null:
 		_check("dish has a Visuals subtree", false)
 		return
-	for part in ["Plate", "Grime", "Food", "Shards"]:
+	for part in ["Body", "Grime", "Food", "Shards"]:
 		_check("visual part '%s' exists" % part, vis.has_part(part))
 
 	var cases := [
-		{"state": Dish.State.CLEAN, "on": ["Plate"], "off": ["Grime", "Food", "Shards"]},
-		{"state": Dish.State.DIRTY, "on": ["Plate", "Grime"], "off": ["Food", "Shards"]},
-		{"state": Dish.State.SERVED, "on": ["Plate", "Food"], "off": ["Grime", "Shards"]},
-		{"state": Dish.State.BROKEN, "on": ["Shards"], "off": ["Plate", "Grime", "Food"]},
+		{"state": Dish.State.CLEAN, "on": ["Body"], "off": ["Grime", "Food", "Shards"]},
+		{"state": Dish.State.DIRTY, "on": ["Body", "Grime"], "off": ["Food", "Shards"]},
+		{"state": Dish.State.SERVED, "on": ["Body", "Food"], "off": ["Grime", "Shards"]},
+		{"state": Dish.State.BROKEN, "on": ["Shards"], "off": ["Body", "Grime", "Food"]},
 	]
 	for case in cases:
 		plate.state = case["state"]
@@ -389,6 +390,52 @@ func _test_dish_visuals() -> void:
 			if (vis.get_node(part) as Node3D).visible:
 				wrong.append("%s should hide" % part)
 		_check("%s shows the right parts" % name, wrong.is_empty(), ", ".join(wrong))
+
+## Every dish TYPE must run the same state table. A bowl, a mug and a glass are
+## art plus a scene, never new logic, so each one has to expose the same part
+## names and land in the same conserved pool. This catches a variant that was
+## authored with a mismatched part name, which would otherwise show up as an
+## invisible mug halfway through a shift.
+func _test_dish_variants() -> void:
+	print("[8] dish variety: every type shares one state table")
+	var scenes := {
+		"bowl": "res://scenes/props/dish_bowl.tscn",
+		"mug": "res://scenes/props/dish_mug.tscn",
+		"glass": "res://scenes/props/dish_glass.tscn",
+	}
+	for label in scenes:
+		var path: String = scenes[label]
+		if not ResourceLoader.exists(path):
+			_check("%s scene exists" % label, false, path)
+			continue
+		var inst := (load(path) as PackedScene).instantiate() as Dish
+		add_child(inst)
+		await get_tree().process_frame
+		var vis := inst.get_node_or_null("Visuals") as DishVisuals
+		var missing := PackedStringArray()
+		if vis == null:
+			missing.append("no Visuals")
+		else:
+			for part in ["Body", "Grime", "Food", "Shards"]:
+				if not vis.has_part(part):
+					missing.append(part)
+		_check("%s exposes every visual part" % label, missing.is_empty(), ", ".join(missing))
+		# It must also behave like a dish: same pool, same verbs.
+		_check("%s registers in the conserved pool" % label, inst in DishLedger.dishes)
+		_check("%s is grabbable when dirty" % label,
+			inst.is_grabbable(), _state_name(inst.state))
+		inst.queue_free()
+		await get_tree().process_frame
+
+	# And the level should actually be serving a mix, not twelve identical plates.
+	var kinds := {}
+	for d in DishLedger.dishes:
+		var body := d.get_node_or_null("Visuals/Body")
+		var key: String = body.scene_file_path.get_file() if body != null else "?"
+		kinds[key] = kinds.get(key, 0) + 1
+	_check("the pool is still 12 dishes", DishLedger.dishes.size() == 12,
+		"%d" % DishLedger.dishes.size())
+	_check("the pool has more than one vessel type", kinds.size() > 1, str(kinds))
 
 ## The bus-tub path, including a regression check on the fix from GDD 10:
 ## stowed plates must stay nested in the tub after it is SET DOWN, not float

@@ -31,14 +31,14 @@ const CATCH_BLOCK_MS := 250
 ## Parts are resolved by name against the Visuals subtree and missing ones are
 ## skipped, so this table can name art that does not exist yet.
 const STATE_PARTS := {
-	State.CLEAN:   {"parts": ["Plate"]},
-	State.AT_PASS: {"parts": ["Plate"], "tint": Color(0.85, 0.9, 0.95)},
-	State.COOKING: {"parts": ["Plate", "Food"], "tint": Color(0.95, 0.45, 0.15)},
-	State.SERVED:  {"parts": ["Plate", "Food"]},
-	State.DIRTY:   {"parts": ["Plate", "Grime"]},
-	State.HELD:    {"parts": ["Plate", "Grime"]},
-	State.AT_PIT:  {"parts": ["Plate", "Grime"], "tint": Color(0.78, 0.52, 0.2)},
-	State.WASHING: {"parts": ["Plate"], "tint": Color(0.35, 0.55, 0.9)},
+	State.CLEAN:   {"parts": ["Body"]},
+	State.AT_PASS: {"parts": ["Body"], "tint": Color(0.85, 0.9, 0.95)},
+	State.COOKING: {"parts": ["Body", "Food"], "tint": Color(0.95, 0.45, 0.15)},
+	State.SERVED:  {"parts": ["Body", "Food"]},
+	State.DIRTY:   {"parts": ["Body", "Grime"]},
+	State.HELD:    {"parts": ["Body", "Grime"]},
+	State.AT_PIT:  {"parts": ["Body", "Grime"], "tint": Color(0.78, 0.52, 0.2)},
+	State.WASHING: {"parts": ["Body"], "tint": Color(0.35, 0.55, 0.9)},
 	State.BROKEN:  {"parts": ["Shards"], "tint": Color(0.18, 0.18, 0.18)},
 }
 
@@ -241,8 +241,8 @@ func _apply_visuals() -> void:
 	if HELD_FOLLOWS_PREVIOUS and state == State.HELD:
 		shown = _state_before_hold
 	var entry: Dictionary = STATE_PARTS.get(shown, {})
-	visuals.show_only(entry.get("parts", ["Plate"]))
-	visuals.tint_plate(entry.get("tint", Color.WHITE), entry.has("tint"))
+	visuals.show_only(entry.get("parts", ["Body"]))
+	visuals.tint_body(entry.get("tint", Color.WHITE), entry.has("tint"))
 	if state == State.BROKEN:
 		visuals.apply_broken()
 	else:

@@ -34,6 +34,9 @@ func _ready() -> void:
 	_build_ceiling()
 	_build_hazard_skirting()
 	_build_pendant_lights()
+	_build_windows()
+	_build_pit_splashback()
+	_build_ceiling_vents()
 	_build_menu_board()
 	_build_wall_clock()
 	_build_open_sign()
@@ -142,6 +145,109 @@ func _build_pendant_lights() -> void:
 		lamp.omni_range = 4.5
 		lamp.shadow_enabled = false
 		group.add_child(lamp)
+
+## Windows down the south wall with a night-street backdrop behind them. The
+## backdrop is a dark slab with emissive blocks standing in for lit windows
+## across the street and a couple of streetlights: it costs three materials and
+## no textures, but it stops the room reading as a sealed box and gives the
+## diner a time of day.
+##
+## The door sits at x -8.5, so the glazing starts clear of it.
+func _build_windows() -> void:
+	const SOUTH_Z := 6.88
+	const SILL_Y := 0.95
+	const GLASS_H := 1.35
+	var frame_mat := _flat(SLATE_900, 0.1, 0.7)
+	var glass_mat := _flat(Color(0.62, 0.74, 0.82), 0.0, 0.15)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.albedo_color.a = 0.22
+
+	var street := Node3D.new()
+	street.name = "StreetBackdrop"
+	add_child(street)
+	# Backdrop slab sits just outside the wall.
+	street.add_child(_box_node(Vector3(15.0, 4.0, 0.1), Vector3(0.5, 1.6, SOUTH_Z + 0.55),
+			_flat(Color(0.05, 0.06, 0.09), 0.0, 1.0)))
+	# Distant lit windows: a scatter of small warm/cool emissive blocks.
+	var warm := _emissive(Color(1.0, 0.82, 0.55), 1.1)
+	var cool := _emissive(Color(0.55, 0.72, 0.95), 0.8)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 20260720
+	for i in 34:
+		var wx := rng.randf_range(-6.0, 7.0)
+		var wy := rng.randf_range(1.1, 3.2)
+		street.add_child(_box_node(Vector3(rng.randf_range(0.14, 0.28), rng.randf_range(0.16, 0.3), 0.04),
+				Vector3(wx, wy, SOUTH_Z + 0.48), warm if i % 3 else cool))
+	# Two streetlamp glows at ground level for depth.
+	for lx in [-3.0, 4.5]:
+		street.add_child(_box_node(Vector3(0.12, 0.9, 0.06), Vector3(lx, 0.75, SOUTH_Z + 0.42),
+				_emissive(WARM_LAMP, 1.6)))
+
+	# Three bays of glazing with mullions between them.
+	var bays := [Vector3(-4.6, 0.0, 0.0), Vector3(0.4, 0.0, 0.0), Vector3(5.4, 0.0, 0.0)]
+	for i in bays.size():
+		var bay := Node3D.new()
+		bay.name = "Window%d" % (i + 1)
+		add_child(bay)
+		bay.position = Vector3(bays[i].x, 0.0, 0.0)
+		bay.add_child(_box_node(Vector3(4.0, GLASS_H, 0.03),
+				Vector3(0.0, SILL_Y + GLASS_H * 0.5, SOUTH_Z), glass_mat))
+		# Frame: sill, head, and a centre mullion.
+		bay.add_child(_box_node(Vector3(4.15, 0.12, 0.16), Vector3(0.0, SILL_Y - 0.06, SOUTH_Z - 0.02), frame_mat))
+		bay.add_child(_box_node(Vector3(4.15, 0.12, 0.16), Vector3(0.0, SILL_Y + GLASS_H + 0.06, SOUTH_Z - 0.02), frame_mat))
+		bay.add_child(_box_node(Vector3(0.10, GLASS_H, 0.14), Vector3(0.0, SILL_Y + GLASS_H * 0.5, SOUTH_Z - 0.02), frame_mat))
+		for edge in [-2.05, 2.05]:
+			bay.add_child(_box_node(Vector3(0.12, GLASS_H + 0.24, 0.16),
+					Vector3(edge, SILL_Y + GLASS_H * 0.5, SOUTH_Z - 0.02), frame_mat))
+
+## White tile splashback behind the dish pit. Reinforces the floor zoning: the
+## pit side is the wipe-clean, industrial half of the room. One MultiMesh, so
+## a wall of tiles is a single draw call.
+func _build_pit_splashback() -> void:
+	const TILE_W := 0.4
+	const TILE_H := 0.28
+	const X := 9.86
+	var rows := 7
+	var cols := 22
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(0.03, TILE_H * 0.94, TILE_W * 0.94)
+	mesh.material = _flat(NEAR_WHITE.darkened(0.06), 0.05, 0.35)
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = mesh
+	mm.instance_count = rows * cols
+	var i := 0
+	for r in rows:
+		for c in cols:
+			# Offset every other row by half a tile: reads as brickwork, not a grid.
+			var z := -4.4 + c * TILE_W + (TILE_W * 0.5 if r % 2 else 0.0)
+			var y := 0.45 + r * TILE_H
+			mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(X, y, z)))
+			i += 1
+	var mmi := MultiMeshInstance3D.new()
+	mmi.name = "PitSplashback"
+	mmi.multimesh = mm
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mmi)
+
+## Extract hoods over the pit and vents down the ceiling: cheap industrial
+## punctuation so the ceiling is not a blank slab.
+func _build_ceiling_vents() -> void:
+	var duct_mat := _flat(SLATE_700.darkened(0.1), 0.4, 0.5)
+	var slat_mat := _flat(SLATE_900, 0.3, 0.6)
+	for spot in [Vector3(9.0, 0.0, 0.0), Vector3(-1.0, 0.0, -6.2)]:
+		var duct := Node3D.new()
+		duct.name = "Duct"
+		add_child(duct)
+		duct.position = Vector3(spot.x, CEILING_Y - 0.28, spot.z)
+		duct.add_child(_box_node(Vector3(1.1, 0.42, 5.2), Vector3.ZERO, duct_mat))
+		for k in 5:
+			duct.add_child(_box_node(Vector3(1.16, 0.06, 0.08),
+					Vector3(0.0, -0.16, -2.0 + k * 1.0), slat_mat))
+	for v in [Vector3(-6.0, 0.0, 3.0), Vector3(2.0, 0.0, 3.0), Vector3(-4.0, 0.0, -1.0)]:
+		var vent := _box_node(Vector3(0.6, 0.05, 0.6), Vector3(v.x, CEILING_Y - 0.05, v.z), slat_mat)
+		vent.name = "Vent"
+		add_child(vent)
 
 ## Slate menu board high on the north wall with a yellow header bar and three
 ## faux "special" rows blocked in with white/yellow bars.
