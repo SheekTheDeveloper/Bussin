@@ -30,6 +30,7 @@ const TABLE_SPOTS: Array[Vector3] = [
 var _mat_cache: Dictionary = {}
 
 func _ready() -> void:
+	_build_floor_zones()
 	_build_ceiling()
 	_build_hazard_skirting()
 	_build_pendant_lights()
@@ -39,6 +40,53 @@ func _ready() -> void:
 	_build_plants()
 
 # --- Builders ----------------------------------------------------------------
+
+## Floor zoning: checkerboard vinyl out front, industrial plate behind the line.
+## This is set dressing that does legibility work (GDD pillar 3) - the two halves
+## of the loop become readable at a glance, so a new player can see where the
+## guest floor ends and the wet, breakable pit side begins without being told.
+##
+## Built as ONE MultiMesh rather than hundreds of MeshInstance3Ds: a few hundred
+## tiles on one draw call keeps the optimization principle intact on low-end
+## machines. Cosmetic only - the real floor collider is the level's Floor node.
+func _build_floor_zones() -> void:
+	const TILE := 1.0
+	const PIT_LINE := 6.6      # world x where the guest floor gives way to the pit
+	const Y := 0.005           # a hair above the floor slab, to avoid z-fighting
+	var light := _flat(NEAR_WHITE.darkened(0.08), 0.0, 0.55)
+	var dark := _flat(SLATE_700.lightened(0.05), 0.0, 0.6)
+	var plate := _flat(SLATE_800.lightened(0.10), 0.25, 0.45)
+
+	var groups := {light: [], dark: [], plate: []}
+	var half_x := 10.0
+	var half_z := 7.0
+	var nx := int(half_x * 2.0 / TILE)
+	var nz := int(half_z * 2.0 / TILE)
+	for ix in nx:
+		for iz in nz:
+			var x := -half_x + (ix + 0.5) * TILE
+			var z := -half_z + (iz + 0.5) * TILE
+			var mat: StandardMaterial3D = plate if x > PIT_LINE else (light if (ix + iz) % 2 == 0 else dark)
+			(groups[mat] as Array).append(Transform3D(Basis.IDENTITY, Vector3(x, Y, z)))
+
+	for mat in groups:
+		var xforms: Array = groups[mat]
+		if xforms.is_empty():
+			continue
+		var quad := BoxMesh.new()
+		quad.size = Vector3(TILE * 0.98, 0.01, TILE * 0.98)  # hairline grout gap
+		quad.material = mat
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.mesh = quad
+		mm.instance_count = xforms.size()
+		for i in xforms.size():
+			mm.set_instance_transform(i, xforms[i])
+		var mmi := MultiMeshInstance3D.new()
+		mmi.multimesh = mm
+		mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mmi.name = "FloorTiles%d" % groups.keys().find(mat)
+		add_child(mmi)
 
 ## A dark ceiling closes the box so the warm pendants read and the slate mood
 ## lands. Single unlit-ish slab, one draw call.

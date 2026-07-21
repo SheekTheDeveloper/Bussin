@@ -41,3 +41,6 @@ Stack wobble greed dial,M4 Feel,Done,,Replaced the fake HUD meter with a real se
 Interaction prompts under the crosshair,M4 Feel,Done,,Contextual verb (PICK UP PLATE / SCOOP INTO TUB / RUN DISH MACHINE / STOCK THE PASS). Local-only, derived from replicated state.
 Camera feel - walk bob landing dip sprint FOV,M4 Feel,Done,,All local and cosmetic. Bob moves head position only so it never fights the look pitch.
 Charged throw and catch verb,M4 Feel,Done,,Tap lobs a catchable pass, hold yeets. Fixed a real bug where every throw broke: impulse 6.5 on a 0.5kg plate launched at 13.3 m/s vs a 6 m/s break threshold. BREAK_SPEED retuned to 7.5 to sit between the two throw speeds.
+Room build-out pass 1,M3 Art Direction,Done,,Wait bench and host podium at the entry, kitchen shelving flanking the pass, corner jukebox, and MultiMesh floor zoning (checker vinyl out front, industrial plate behind the pit line). All in nav_geo so the guest navmesh bakes around them.
+Room build-out pass 2,M3 Art Direction,Todo,,Window frames plus street backdrop, wall tile splashback behind the pit, ceiling vents.
+Dish variety - bowls mugs glasses,M3 Art Direction,Todo,,VARIETY not count. The 12-plate pool size is a balance constant (conserved economy); adding dish TYPES is a content axis and safe.

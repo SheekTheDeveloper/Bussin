@@ -104,6 +104,14 @@ A floating camera with no hands is the second thing a viewer notices.
 
 ## M3 - Art direction: low-poly, sharpened (D1 SETTLED 2026-07-20)
 
+- [x] **Room build-out, pass 1**: waiting bench and host podium at the entry,
+      kitchen shelving flanking the pass, a jukebox in the corner, and floor
+      zoning that makes the guest floor vs the pit side readable at a glance.
+      All furnishings are in `nav_geo` so guests path around them.
+- [ ] Room build-out, pass 2: window frames + street backdrop, wall tile
+      splashback behind the pit, ceiling vents
+- [ ] Dish VARIETY (bowls, mugs, glasses) - a content axis, not a count change.
+      The pool size is a balance constant; adding types is not.
 - [x] **State-driven dish visuals** (`DishVisuals`) plus the first three part
       meshes: grime, food, shards. The plate is no longer one tinted mesh, so
       per-state art can land incrementally. See GDD 4.8.

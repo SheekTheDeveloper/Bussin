@@ -109,6 +109,12 @@ end, players recover the dirty end:
 - A HELD plate keeps the look it had before pickup, so a clean plate does not turn grimy in your hands.
 - Covered by the return-half harness: every part exists and CLEAN / DIRTY / SERVED / BROKEN each show exactly the right set.
 
+### 4.9 Room Dressing - [AS-BUILT]
+- **Floor zoning carries meaning, not just mood.** Checkerboard vinyl out front, industrial plate past the pit line at x 6.6, so the guest half and the wet breakable half of the loop are readable at a glance without a tutorial (pillar 3). Built as one `MultiMesh` per material - a few hundred tiles on three draw calls, per the optimization principle.
+- Furnishings: waiting bench and host podium at the entry (making the door queue diegetic), kitchen shelving flanking the pass (selling the black-box kitchen as a real place), and a corner jukebox.
+- **Every furnishing is a `StaticBody3D` in the `nav_geo` group**, so the runtime navmesh bake routes guests around it. Anything with collision added to this room MUST join that group or guests will walk through it; anything purely cosmetic must NOT have collision at all (see `DinerDecor`, which is colliderless by design).
+- Deliberately **not** added: booths or counter seating in the guest area. A seat a player cannot seat a party at reads as a bug, so dressing is kept to the entry, the pit side, and the kitchen backdrop.
+
 ### 4.5 Escalation / Content Axis - [VISION]
 - Restaurants as levels: Diner (tutorial) → Family Restaurant → Buffet (nightmare) → Fine Dining (fragile, white tablecloths) → Banquet Hall (event mode).
 - Modifiers: broken dish machine (hand-wash only), short-staffed kitchen, health-inspector audit, rain (muddy footprints).

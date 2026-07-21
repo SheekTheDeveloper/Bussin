@@ -16,6 +16,10 @@
 [ext_resource type="FontVariation" path="res://ui/theme/font_display.tres" id="12_display"]
 [ext_resource type="Script" path="res://scenes/ui/pause_menu.gd" id="15_pause"]
 [ext_resource type="Script" path="res://scripts/return_soak.gd" id="16_returnsoak"]
+[ext_resource type="PackedScene" path="res://assets/models/wait_bench.glb" id="17_bench"]
+[ext_resource type="PackedScene" path="res://assets/models/host_podium.glb" id="18_podium"]
+[ext_resource type="PackedScene" path="res://assets/models/wall_shelf.glb" id="19_shelf"]
+[ext_resource type="PackedScene" path="res://assets/models/jukebox.glb" id="20_juke"]
 
 [sub_resource type="Environment" id="Environment_diner"]
 background_mode = 1
@@ -57,6 +61,18 @@ geometry_source_geometry_mode = 1
 geometry_source_group_name = &"nav_geo"
 agent_radius = 0.35
 agent_height = 1.4
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bench"]
+size = Vector3(1.86, 1.06, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_podium"]
+size = Vector3(0.66, 1.08, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_shelf"]
+size = Vector3(2, 1.8, 0.34)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_juke"]
+size = Vector3(0.9, 1.4, 0.5)
 
 [sub_resource type="StyleBoxFlat" id="sb_receipt"]
 content_margin_left = 40.0
@@ -144,6 +160,53 @@ shape = SubResource("BoxShape3D_wallEW")
 
 [node name="Decor" type="Node3D" parent="." unique_id=1607452017]
 script = ExtResource("13_decor")
+
+[node name="Furnishings" type="Node3D" parent="." unique_id=1730125060]
+
+[node name="WaitBench" type="StaticBody3D" parent="Furnishings" unique_id=1730125061 groups=["nav_geo"]]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -9.5, 0, 3)
+
+[node name="Model" parent="Furnishings/WaitBench" instance=ExtResource("17_bench")]
+
+[node name="Shape" type="CollisionShape3D" parent="Furnishings/WaitBench"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.53, 0)
+shape = SubResource("BoxShape3D_bench")
+
+[node name="HostPodium" type="StaticBody3D" parent="Furnishings" unique_id=1730125062 groups=["nav_geo"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.6, 0, 6.4)
+
+[node name="Model" parent="Furnishings/HostPodium" instance=ExtResource("18_podium")]
+
+[node name="Shape" type="CollisionShape3D" parent="Furnishings/HostPodium"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.54, 0)
+shape = SubResource("BoxShape3D_podium")
+
+[node name="ShelfWest" type="StaticBody3D" parent="Furnishings" unique_id=1730125063 groups=["nav_geo"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0, -6.65)
+
+[node name="Model" parent="Furnishings/ShelfWest" instance=ExtResource("19_shelf")]
+
+[node name="Shape" type="CollisionShape3D" parent="Furnishings/ShelfWest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("BoxShape3D_shelf")
+
+[node name="ShelfEast" type="StaticBody3D" parent="Furnishings" unique_id=1730125064 groups=["nav_geo"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.6, 0, -6.65)
+
+[node name="Model" parent="Furnishings/ShelfEast" instance=ExtResource("19_shelf")]
+
+[node name="Shape" type="CollisionShape3D" parent="Furnishings/ShelfEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("BoxShape3D_shelf")
+
+[node name="Jukebox" type="StaticBody3D" parent="Furnishings" unique_id=1730125065 groups=["nav_geo"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.8, 0, -6.5)
+
+[node name="Model" parent="Furnishings/Jukebox" instance=ExtResource("20_juke")]
+
+[node name="Shape" type="CollisionShape3D" parent="Furnishings/Jukebox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+shape = SubResource("BoxShape3D_juke")
 
 [node name="Tables" type="Node3D" parent="." unique_id=1607452016]
 
