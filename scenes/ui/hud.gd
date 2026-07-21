@@ -20,6 +20,7 @@ extends CanvasLayer
 @onready var heavy_label := %HeavyLabel as Label
 @onready var alarm := %Alarm as Control
 @onready var prompt := %Prompt as Label
+@onready var charge_bar := %ChargeBar as ProgressBar
 
 @onready var end_overlay := %EndOverlay as ColorRect
 @onready var report_stars := %Stars as Label
@@ -48,6 +49,7 @@ func _ready() -> void:
 	carry_group.visible = false
 	alarm.visible = false
 	prompt.text = ""
+	charge_bar.visible = false
 	_refresh_crew()
 	_refresh_counts()
 	_on_tick(GameState.time_left)
@@ -61,6 +63,7 @@ func _process(_delta: float) -> void:
 		prompt.text = ""
 		return
 	_show_prompt(me)
+	_show_throw_charge(me)
 	# A tub takes priority (you can't hand-stack while hauling one); otherwise
 	# show the hand-stack of plates on its way to the pass.
 	if me.carry_load >= 0:
@@ -81,6 +84,17 @@ func _process(_delta: float) -> void:
 func _show_prompt(me: Busser) -> void:
 	prompt.text = me.focus_prompt
 	prompt.self_modulate = _RED if me.focus_prompt == "STACK FULL" else _YELLOW
+
+## Winding up a throw. Turns red once the plate is travelling fast enough to
+## break on impact, so the player can see the moment a pass becomes a yeet.
+func _show_throw_charge(me: Busser) -> void:
+	if me.throw_charge <= 0.0 or me.stack_load <= 0:
+		charge_bar.visible = false
+		return
+	charge_bar.visible = true
+	charge_bar.value = me.throw_charge * 100.0
+	var speed := lerpf(Busser.THROW_SPEED_MIN, Busser.THROW_SPEED_MAX, me.throw_charge)
+	charge_bar.self_modulate = _RED if speed >= Dish.BREAK_SPEED else _YELLOW
 
 func _show_carry(count: int, cap: int, meter: float, hot: bool) -> void:
 	carry_group.visible = true

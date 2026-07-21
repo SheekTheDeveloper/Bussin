@@ -10,7 +10,25 @@ const CARRY_SPEED := 3.0  # hauling a tub is slower, and you can't sprint
 const JUMP_VELOCITY := 4.2
 const MOUSE_SENSITIVITY := 0.002
 const STICK_LOOK_SPEED := 2.8  # rad/s at full right-stick deflection
-const THROW_FORCE := 6.5
+# --- Throwing: tap to pass, hold to yeet ------------------------------------
+# Throws are specified as SPEED, not impulse. Impulse depends on the dish's mass
+# (0.5), which is how the original 6.5 impulse became a 13.3 m/s launch - over
+# double the break threshold, so every single throw shattered on contact and
+# passing a plate to a team-mate was impossible.
+# Now the button charges: a tap lobs a plate gently enough to survive its
+# landing (and to be caught), a full hold hurls it fast enough to break on
+# anything it hits. Both are useful, and which one you get is a choice.
+const THROW_SPEED_MIN := 4.5    # tap: a catchable pass
+const THROW_SPEED_MAX := 11.0   # full hold: a genuine yeet, breaks on impact
+const THROW_CHARGE_TIME := 0.6  # seconds of holding to reach max
+const THROW_ARC := 0.28         # upward share of the launch direction
+
+# --- Catching ---------------------------------------------------------------
+# Catching is automatic when a moving plate reaches your hands, which makes
+# "throw it to me" work without a timing minigame. Resting plates are ignored,
+# so this never vacuums up the counter.
+const CATCH_RANGE := 1.1
+const CATCH_MIN_SPEED := 2.0
 const GRAB_RANGE := 3.0
 const STACK_MAX := 5  # plates you can hand-carry at once (expo run to the pass)
 
@@ -77,6 +95,8 @@ var _bob_t := 0.0
 var _dip := 0.0
 var _base_fov := 75.0
 var _was_on_floor_local := true
+## 0..1 throw charge, local to the owning peer until it releases the button.
+var throw_charge: float = 0.0
 
 @onready var head := $Head as Node3D
 @onready var camera := $Head/Camera3D as Camera3D
@@ -127,8 +147,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 		else:
 			_send_grab_or_drop()
-	elif event.is_action_pressed("throw"):
-		_server_throw.rpc_id(1)
 	elif event.is_action_pressed("interact"):
 		_send_interact()
 	# Escape / gamepad Start is owned by the pause menu (pause_menu.gd), which
@@ -141,10 +159,12 @@ func _physics_process(delta: float) -> void:
 	# the client-owned ones whose movement it does not run.
 	if multiplayer.is_server():
 		_update_stack_stability(delta)
+		_try_catch()
 	if not is_multiplayer_authority():
 		return
 	_update_camera_feel(delta)
 	_update_focus()
+	_update_throw_charge(delta)
 	var look := Input.get_vector("look_left", "look_right", "look_up", "look_down")
 	if look != Vector2.ZERO:
 		var stick := STICK_LOOK_SPEED * Settings.stick_sensitivity * delta
@@ -409,15 +429,43 @@ func _recv_stack_load(value: int) -> void:
 	if multiplayer.get_remote_sender_id() == 1:  # only trust the server
 		stack_load = value
 
+## Local: build charge while the button is held, and fire on release. Polled
+## rather than event-driven so a tap and a long hold read the same way.
+func _update_throw_charge(delta: float) -> void:
+	if Input.is_action_pressed("throw"):
+		throw_charge = minf(throw_charge + delta / THROW_CHARGE_TIME, 1.0)
+	if Input.is_action_just_released("throw"):
+		_server_throw.rpc_id(1, throw_charge)
+		throw_charge = 0.0
+
 @rpc("any_peer", "call_local", "reliable")
-func _server_throw() -> void:
+func _server_throw(charge: float) -> void:
 	if not multiplayer.is_server() or held_stack.is_empty():
 		return
-	# Chuck the top plate off the stack - toss cleans into the pass or dirties
-	# into a tub from range, one at a time.
+	# Chuck the top plate off the stack - lob cleans onto the pass, pass one to a
+	# team-mate across the pit, or wind up and smash it on purpose.
 	var dish: Dish = held_stack.pop_back()
 	server_set_stack(held_stack.size())
-	dish.throw(-camera.global_transform.basis.z * THROW_FORCE + Vector3.UP * 1.5)
+	var speed := lerpf(THROW_SPEED_MIN, THROW_SPEED_MAX, clampf(charge, 0.0, 1.0))
+	var dir := (-camera.global_transform.basis.z + Vector3.UP * THROW_ARC).normalized()
+	dish.launch(dir * speed, self)
+
+## Server-only: a plate flying into your hands is caught, if you have room for
+## it. Cheap enough to run every frame (one pass over a 12-plate pool), and it
+## reuses the same stack the grab verb fills, so a caught plate is just part of
+## your run.
+func _try_catch() -> void:
+	if carried_tub != null or held_stack.size() >= STACK_MAX:
+		return
+	for d in DishLedger.dishes:
+		if not d.is_catchable(self):
+			continue
+		if d.global_position.distance_to(hold_point.global_position) > CATCH_RANGE:
+			continue
+		d.pick_up(self, held_stack.size())
+		held_stack.append(d)
+		server_set_stack(held_stack.size())
+		return  # one catch per frame; a fumbled second plate is fair
 
 @rpc("any_peer", "call_local", "reliable")
 func _server_interact(target_path: NodePath) -> void:

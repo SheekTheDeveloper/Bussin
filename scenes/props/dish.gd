@@ -9,7 +9,15 @@ extends RigidBody3D
 
 enum State { DIRTY, HELD, AT_PIT, WASHING, CLEAN, BROKEN, AT_PASS, COOKING, SERVED }
 
-const BREAK_SPEED := 6.0  # generous: only genuine yeets break plates
+## Impact speed above which a plate shatters. Sits above what a gently lobbed
+## plate is doing when it lands (about 6.8 m/s falling to the floor from hand
+## height) and below a fully charged throw (11 m/s), so a pass survives and a
+## deliberate yeet does not. Retuned from 6.0, which every throw exceeded.
+const BREAK_SPEED := 7.5
+
+## A thrower cannot re-catch its own plate for this long, or a throw would land
+## straight back in your hands on the next frame.
+const CATCH_BLOCK_MS := 250
 
 const STATE_COLORS := {
 	State.DIRTY: Color(0.45, 0.31, 0.18),
@@ -36,6 +44,8 @@ var holder: Busser = null            # server-side only
 var in_tub: BusTub = null            # server-side only; set while stowed in a tub
 var hold_index := 0                  # server-side only; height in the holder's stack
 var _state_before_hold: int = State.DIRTY
+var _thrown_by: Busser = null       # server-side; who launched it
+var _catch_block_until: int = 0     # server-side; ms ticks
 
 @onready var mesh: MeshInstance3D = find_children("*", "MeshInstance3D", true, false)[0]
 @onready var shape := $Shape as CollisionShape3D
@@ -96,6 +106,7 @@ func release_to_pit(spot: Vector3) -> void:
 
 func pick_up(by: Busser, index: int = 0) -> void:
 	_state_before_hold = state
+	_thrown_by = null
 	holder = by
 	hold_index = index
 	freeze = true
@@ -114,10 +125,30 @@ func drop() -> void:
 		linear_velocity = Vector3.ZERO
 		angular_velocity = Vector3.ZERO
 
-func throw(impulse: Vector3) -> void:
+## Launch at an exact SPEED rather than by impulse. Impulse divides by mass, so
+## tuning it means tuning against the dish's mass by hand; a velocity is what the
+## design actually talks about ("a pass", "a yeet") and what BREAK_SPEED compares
+## against.
+func launch(launch_velocity: Vector3, thrower: Busser) -> void:
 	drop()
-	if multiplayer.is_server() and state != State.BROKEN:
-		apply_central_impulse(impulse)
+	if not multiplayer.is_server() or state == State.BROKEN:
+		return
+	_thrown_by = thrower
+	_catch_block_until = Time.get_ticks_msec() + CATCH_BLOCK_MS
+	linear_velocity = launch_velocity
+
+## Can `by` pluck this plate out of the air right now? Only moving plates count,
+## so a plate resting on a counter is never sucked into a passing busser's hands.
+func is_catchable(by: Busser) -> bool:
+	if holder != null or in_tub != null or freeze:
+		return false
+	if not state in [State.DIRTY, State.CLEAN]:
+		return false
+	if linear_velocity.length() < Busser.CATCH_MIN_SPEED:
+		return false
+	if by == _thrown_by and Time.get_ticks_msec() < _catch_block_until:
+		return false
+	return true
 
 func land_at_pit() -> void:
 	state = State.AT_PIT

@@ -160,6 +160,7 @@ func _run() -> void:
 	await _test_deliver_to_pass(busser, hand_dishes)
 	await _test_tub_path(busser)
 	await _test_stack_wobble(busser)
+	await _test_throw_and_catch(busser)
 
 	print("=== RETURN SOAK: %d/%d checks passed ===" % [_checks - _failures, _checks])
 	print("RETURN SOAK FINAL: %s" % ("OK" if _failures == 0 else "FAIL"))
@@ -300,6 +301,61 @@ func _test_stack_wobble(busser: Busser) -> void:
 		busser._update_stack_stability(1.0 / 60.0)
 	_check("a single plate never wobbles", busser.stack_load == 1 and busser.wobble == 0.0,
 		"%d plates, wobble %.2f" % [busser.stack_load, busser.wobble])
+
+## Throwing: a tap must produce a plate that survives its landing (so you can
+## pass one across the pit), a full charge must produce one that breaks (so the
+## yeet still means something), and a plate in flight must be catchable.
+##
+## This exists because the original throw was specified as an impulse: 6.5 on a
+## 0.5kg dish launched at 13.3 m/s, over double BREAK_SPEED, so every throw
+## shattered on contact and passing was impossible. That must not come back.
+func _test_throw_and_catch(busser: Busser) -> void:
+	print("[6] throw arcs and catching")
+	while busser.stack_load > 0:
+		busser._spill_top_plate()
+	if busser.carried_tub != null:
+		busser._server_grab_or_drop(NodePath())
+
+	# Speeds must straddle the break threshold, or the charge is meaningless.
+	_check("a tapped throw is survivable", Busser.THROW_SPEED_MIN < Dish.BREAK_SPEED,
+		"%.1f vs %.1f" % [Busser.THROW_SPEED_MIN, Dish.BREAK_SPEED])
+	_check("a charged throw breaks on impact", Busser.THROW_SPEED_MAX > Dish.BREAK_SPEED,
+		"%.1f vs %.1f" % [Busser.THROW_SPEED_MAX, Dish.BREAK_SPEED])
+
+	# Tap-throw a plate into open air and confirm it leaves at the slow speed.
+	var dishes := _stage_dirty(1, [])
+	if dishes.is_empty():
+		_check("staged a plate to throw", false)
+		return
+	var plate := dishes[0] as Dish
+	_head_to(busser, plate.global_position)
+	busser._server_grab_or_drop(plate.get_path())
+	await _frames(2)
+	busser._server_throw(0.0)
+	var launch_speed := plate.linear_velocity.length()
+	_check("tap throw leaves at the pass speed", absf(launch_speed - Busser.THROW_SPEED_MIN) < 0.5,
+		"%.2f m/s" % launch_speed)
+	_check("the thrown plate is in flight, not held", plate.holder == null and plate.state != Dish.State.HELD)
+
+	# A plate in flight is catchable; the thrower briefly is not allowed to.
+	_check("the thrower cannot instantly re-catch", not plate.is_catchable(busser))
+	await get_tree().create_timer(float(Dish.CATCH_BLOCK_MS) / 1000.0 + 0.05).timeout
+	# Re-launch it so it is definitely still moving after the block expires.
+	plate.launch(Vector3(Busser.THROW_SPEED_MIN, 0.0, 0.0), null)
+	_check("a plate in flight can be caught", plate.is_catchable(busser),
+		"speed %.2f state %s" % [plate.linear_velocity.length(), _state_name(plate.state)])
+
+	# And a settled plate must NOT be, or catching would hoover up the counter.
+	plate.linear_velocity = Vector3.ZERO
+	_check("a resting plate is never auto-caught", not plate.is_catchable(busser))
+
+	# The catch verb actually fills the hand-stack.
+	plate.launch(Vector3(Busser.THROW_SPEED_MIN, 0.0, 0.0), null)
+	_head_to(busser, plate.global_position)
+	busser._try_catch()
+	_check("catching adds the plate to the stack",
+		plate.holder == busser and busser.stack_load == 1,
+		"holder=%s stack=%d" % [str(plate.holder != null), busser.stack_load])
 
 ## The bus-tub path, including a regression check on the fix from GDD 10:
 ## stowed plates must stay nested in the tub after it is SET DOWN, not float

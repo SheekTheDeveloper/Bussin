@@ -19,7 +19,7 @@ An **SMT Games** joint. Godot 4.7, typed GDScript.
 | Space            | Cross       | Jump                                                                                                                         |
 | Mouse            | Right stick | Look                                                                                                                         |
 | LMB              | R1          | Grab / drop - stack plates by hand, scoop dirties into a carried tub, or set the tub down (empty click recaptures the mouse) |
-| RMB              | L1          | Throw the top plate (throw it hard enough and it _breaks_ - permanently)                                                     |
+| RMB              | L1          | Throw the top plate - **tap** to lob a catchable pass, **hold** to wind up a yeet that shatters on impact |
 | E                | Square      | Interact - start the dish machine, dump a loaded tub at the pit                                                              |
 | Esc              | Start       | Pause ("ON BREAK") - resume, settings, or clock out                                                                          |
 

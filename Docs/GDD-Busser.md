@@ -57,7 +57,8 @@ end, players recover the dirty end:
 | Wipe / reset | Rag + place-settings step between messy and READY. | **[VISION]** - MVP: clearing all dishes *is* the reset |
 | Wash (spray) | PowerWash-lite per-dish scrub before the machine. | **[VISION]** (§8.1) |
 | Haul trash / Mop | Dumpster runs, spills, slip hazards. | **[VISION]** - cut from MVP (§7) |
-| Yeet (emergent) | Everything is physics; throwing a plate to a friend at the pit is legal and gravity-punished. | **[AS-BUILT]** |
+| Throw (charged) | Tap lobs a plate at a catchable speed that survives its landing; holding winds up to a yeet fast enough to shatter on anything it hits. The wind-up is shown on the crosshair and turns red once the throw would break. | **[AS-BUILT]** (§4.7) |
+| Catch | A plate flying into your hands is caught automatically if you have stack room and no tub. Resting plates are ignored. | **[AS-BUILT]** (§4.7) |
 
 ## 4. Systems
 
@@ -93,6 +94,13 @@ end, players recover the dirty end:
 - `wobble` is mirrored to the owning peer by RPC for its HUD, the same pattern as `carry_load`. It must never go on the body synchronizer, whose authority is the client.
 - The HUD WOBBLE meter now shows this real value for a hand-stack (it stays a fill gauge for a tub, which cannot spill).
 - Covered by the return-half harness: calm carry does not spill, violent carry does, a single plate never wobbles.
+
+### 4.7 Throwing and Catching - [AS-BUILT]
+- **Throws are specified as a speed, not an impulse.** Impulse divides by mass, which is how the original `THROW_FORCE = 6.5` on a 0.5 kg plate became a **13.3 m/s** launch against a 6 m/s break threshold: *every* throw shattered on contact, so passing a plate to a team-mate was impossible despite being called out as core fun.
+- The throw button now **charges**. `THROW_SPEED_MIN` (4.5) is a lob that survives its landing and can be caught; `THROW_SPEED_MAX` (11.0) is a genuine yeet. `BREAK_SPEED` was retuned to **7.5** so it sits between them - above what a lobbed plate is doing when it lands (~6.8 m/s falling to the floor from hand height) and below a full-charge throw. Both throws are useful and the player chooses which one they get.
+- **Catching is automatic** rather than a timing minigame: a plate moving faster than `CATCH_MIN_SPEED` that reaches your hold point is caught, if you have stack room and are not hauling a tub. Resting plates are excluded so the counter is never hoovered up, and the thrower is blocked from re-catching its own throw for `CATCH_BLOCK_MS`.
+- This is the "collisions of responsibility" pillar in mechanical form: one busser can clear a table and pass plates across the pit to another rather than both walking the same loop.
+- Covered by the return-half harness: speeds straddle the break threshold, a tap leaves at pass speed, a plate in flight is catchable, a resting one is not, and catching fills the hand-stack.
 
 ### 4.5 Escalation / Content Axis - [VISION]
 - Restaurants as levels: Diner (tutorial) → Family Restaurant → Buffet (nightmare) → Fine Dining (fragile, white tablecloths) → Banquet Hall (event mode).
@@ -163,7 +171,12 @@ end, players recover the dirty end:
 | Shift goal | $500 | **[VISION] not implemented** - see §4.4 |
 | Bus tub capacity | 6 | `BusTub.CAPACITY` |
 | Hand-stack capacity | 5 plates | `Busser.STACK_MAX` (grab to add, grab-away to set down, throw = top plate) |
-| Plate break speed | 6 m/s | `Dish.BREAK_SPEED` |
+| Plate break speed | 7.5 m/s | `Dish.BREAK_SPEED` |
+| Throw speed (tap) | 4.5 m/s | `Busser.THROW_SPEED_MIN` |
+| Throw speed (full charge) | 11.0 m/s | `Busser.THROW_SPEED_MAX` |
+| Throw charge time | 0.6 s | `Busser.THROW_CHARGE_TIME` |
+| Catch range | 1.1 m | `Busser.CATCH_RANGE` |
+| Catch minimum speed | 2.0 m/s | `Busser.CATCH_MIN_SPEED` |
 | Wobble recover rate | 0.72 /s | `Busser.WOBBLE_RECOVER` |
 | Wobble from speed | 0.15 per m/s | `Busser.WOBBLE_FROM_SPEED` |
 | Wobble from turn | 0.5 per rad/s | `Busser.WOBBLE_FROM_TURN` |
