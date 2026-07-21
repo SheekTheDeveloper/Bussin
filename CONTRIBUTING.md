@@ -51,6 +51,10 @@ Before you commit, all three:
    godot --headless --path . --quit
    ```
    Silence is success. Any `SCRIPT ERROR` / parse error means it's not done.
+   **This does not catch everything.** `--quit` only scans resources, so a
+   parse error in a script that no imported resource loads (a harness, a scene
+   attached late) slips through and shows up as the game hanging instead. The
+   soaks below are what actually exercise those.
 2. **Both soak harnesses still pass.** There is one per half of the loop.
    ```bash
    # AI half: guests queue, get seated, order, eat, leave

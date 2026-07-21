@@ -133,7 +133,12 @@ audio and hands land, reopen D1 with evidence. Not before.
 Queued behind M0 because the playtest generates this list, rather than guessing
 at it now.
 
-- [ ] Carry speed / wobble curve
+- [x] **Stack wobble is a real mechanic** (was a fake HUD meter). Greed dial per
+      GDD 4.6, harness-covered. First-pass tuning - confirm the curve by feel.
+- [x] **Interaction prompts** under the crosshair, so it is always clear what you
+      are aiming at and what the button does (GDD pillar 3, "always legible").
+- [x] **Camera feel**: walk bob scaled by speed, landing dip, sprint FOV push.
+- [ ] Carry speed / wobble curve confirmed in a playtest
 - [ ] Scoop stack height, throw arcs
 - [ ] Spray-wash minigame (GDD §8 "PowerWash-lite")
 - [ ] Wipe / place-setting reset step

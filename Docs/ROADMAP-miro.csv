@@ -21,7 +21,7 @@ ReflectionProbe in the pit area,M3 Art Direction,Todo,,Replaces SSR which was re
 Roughness/metallic material pass,M3 Art Direction,Todo,,Stainless reads as metal ceramic as glazed. No subsurface scattering - rejected as D3.
 MultiMesh for high-count props,M3 Art Direction,Todo,,Plates and glasses. Consistent with the optimization principle.
 Ground-center origins on all props,M3 Art Direction,Todo,,Makes snapping and stacking trivial. Free win.
-Carry speed and wobble curve,M4 Feel,Todo,M0 MVP Gate,The playtest generates this list rather than guessing now.
+Confirm the wobble curve by feel,M4 Feel,Todo,M0 MVP Gate,Mechanic is built and harness-covered (GDD 4.6). First-pass numbers: 2 plates always safe, walking safe at any size, full stack sprinting spills in ~3.9s. Needs a human to say whether that reads right.
 Scoop stack height and throw arcs,M4 Feel,Todo,M0 MVP Gate,
 Spray-wash minigame,M4 Feel,Todo,M0 MVP Gate,GDD section 8 PowerWash-lite.
 Wipe / place-setting reset step,M4 Feel,Todo,M0 MVP Gate,Today clearing all dishes flips a table straight to READY.
@@ -37,3 +37,6 @@ Steam page,M6 Studio,Backlog,M2 Character,Hook: Overcooked from the other side o
 Lighting and post pass - warm pass lights gentle bloom,M3 Art Direction,Todo,,Where the production shine actually comes from at this poly budget.
 Replace placeholder sounds with real assets,M1 Audio,Todo,,Wiring is done and filenames are stable - this is a drop-in swap. Current files are synthesized programmer art from tools/gen_placeholder_audio.py.
 Door chime on guest arrival,M1 Audio,Todo,Audio bus layout,
+Stack wobble greed dial,M4 Feel,Done,,Replaced the fake HUD meter with a real server-authoritative mechanic. Top plate slides off when wobble maxes; dropped not deleted so it may land safely or smash.
+Interaction prompts under the crosshair,M4 Feel,Done,,Contextual verb (PICK UP PLATE / SCOOP INTO TUB / RUN DISH MACHINE / STOCK THE PASS). Local-only, derived from replicated state.
+Camera feel - walk bob landing dip sprint FOV,M4 Feel,Done,,All local and cosmetic. Bob moves head position only so it never fights the look pitch.

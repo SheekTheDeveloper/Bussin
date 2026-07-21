@@ -108,12 +108,15 @@ func _await_state(dishes: Array, want: int, timeout: float = SETTLE_TIMEOUT) -> 
 ## moved directly rather than walked.
 func _head_to(busser: Busser, pos: Vector3) -> void:
 	busser.global_position += pos - busser.head.global_position
+	# A teleport is not movement; re-baseline so it cannot register as speed.
+	busser.reset_motion_tracking()
 
 ## Teleport the busser so its hold point sits exactly at `pos`, so a dropped
 ## stack lands precisely where we want it (inside a station's trigger zone)
 ## instead of depending on where the body happened to stop.
 func _hold_point_to(busser: Busser, pos: Vector3) -> void:
 	busser.global_position += pos - busser.hold_point.global_position
+	busser.reset_motion_tracking()
 
 ## Reset dishes to a known DIRTY state parked on a table, clear of every
 ## station zone, so each test starts from the same place.
@@ -156,6 +159,7 @@ func _run() -> void:
 	await _test_machine_cycle(busser, hand_dishes)
 	await _test_deliver_to_pass(busser, hand_dishes)
 	await _test_tub_path(busser)
+	await _test_stack_wobble(busser)
 
 	print("=== RETURN SOAK: %d/%d checks passed ===" % [_checks - _failures, _checks])
 	print("RETURN SOAK FINAL: %s" % ("OK" if _failures == 0 else "FAIL"))
@@ -241,6 +245,61 @@ func _test_deliver_to_pass(busser: Busser, dishes: Array) -> void:
 	busser._server_grab_or_drop(NodePath())
 	await _await_state(carried, Dish.State.AT_PASS)
 	_check_state("plates staged AT_PASS", carried, Dish.State.AT_PASS)
+
+## The greed dial: a big hand-stack carried violently must spill its top plate,
+## and a stack carried calmly must not. Drives the real server-side stability
+## function directly, feeding it synthetic motion by moving the body between
+## calls - the harness disables the busser's own _physics_process, so nothing
+## else is advancing it.
+func _test_stack_wobble(busser: Busser) -> void:
+	print("[5] stack wobble: the greed dial")
+	# Test 4 leaves the tub in hand, and a carried tub turns every grab into a
+	# scoop. Put it down with the real verb so the hand-stack path is reachable.
+	if busser.carried_tub != null:
+		busser._server_grab_or_drop(NodePath())
+	_check("hands free before stacking", busser.carried_tub == null)
+	var dishes := _stage_dirty(4, [])
+	for d in dishes:
+		_head_to(busser, d.global_position)
+		busser._server_grab_or_drop(d.get_path())
+	var carried: int = busser.stack_load
+	_check("built a %d-plate stack" % carried, carried >= 3, "got %d" % carried)
+	if carried < 3:
+		return
+
+	# Calm: small steps, no turning. The stack should survive and stay settled.
+	busser.wobble = 0.0
+	for i in 30:
+		busser.global_position += Vector3(0.01, 0.0, 0.0)
+		busser._update_stack_stability(1.0 / 60.0)
+	_check("a stack carried calmly does not spill", busser.stack_load == carried,
+		"%d -> %d plates, wobble %.2f" % [carried, busser.stack_load, busser.wobble])
+	_check("wobble stays low when steady", busser.wobble < 0.25, "%.2f" % busser.wobble)
+
+	# Violent: sprint-speed steps plus hard camera whips. Should shed a plate.
+	var spilled := false
+	for i in 240:
+		busser.global_position += Vector3(Busser.SPRINT_SPEED / 60.0, 0.0, 0.0)
+		busser.rotation.y += 3.0 / 60.0
+		busser._update_stack_stability(1.0 / 60.0)
+		if busser.stack_load < carried:
+			spilled = true
+			break
+	_check("a stack carried violently spills its top plate", spilled,
+		"%d plates left, wobble %.2f" % [busser.stack_load, busser.wobble])
+	_check("wobble eases after a spill", busser.wobble <= Busser.WOBBLE_RELIEF + 0.01,
+		"%.2f" % busser.wobble)
+
+	# A single plate is never punished - the dial is for greed, not for playing.
+	while busser.stack_load > 1:
+		busser._spill_top_plate()
+	busser.wobble = 0.0
+	for i in 120:
+		busser.global_position += Vector3(Busser.SPRINT_SPEED / 60.0, 0.0, 0.0)
+		busser.rotation.y += 3.0 / 60.0
+		busser._update_stack_stability(1.0 / 60.0)
+	_check("a single plate never wobbles", busser.stack_load == 1 and busser.wobble == 0.0,
+		"%d plates, wobble %.2f" % [busser.stack_load, busser.wobble])
 
 ## The bus-tub path, including a regression check on the fix from GDD 10:
 ## stowed plates must stay nested in the tub after it is SET DOWN, not float

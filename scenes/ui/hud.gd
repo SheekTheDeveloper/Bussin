@@ -19,6 +19,7 @@ extends CanvasLayer
 @onready var plates_num := %PlatesNum as Label
 @onready var heavy_label := %HeavyLabel as Label
 @onready var alarm := %Alarm as Control
+@onready var prompt := %Prompt as Label
 
 @onready var end_overlay := %EndOverlay as ColorRect
 @onready var report_stars := %Stars as Label
@@ -29,6 +30,10 @@ extends CanvasLayer
 
 const _GREEN := Color(0.29, 0.8706, 0.502)
 const _RED := Color(0.8627, 0.149, 0.149)
+const _YELLOW := Color(0.9804, 0.8, 0.0824)
+## Wobble fraction past which the meter turns red and HEAVY shows. Below this
+## you are stable enough to keep walking; above it you are about to lose a plate.
+const _WOBBLE_WARN := 0.6
 
 func _ready() -> void:
 	GameState.tick.connect(_on_tick)
@@ -42,6 +47,7 @@ func _ready() -> void:
 	end_overlay.visible = false
 	carry_group.visible = false
 	alarm.visible = false
+	prompt.text = ""
 	_refresh_crew()
 	_refresh_counts()
 	_on_tick(GameState.time_left)
@@ -52,22 +58,36 @@ func _process(_delta: float) -> void:
 	var me := Busser.local
 	if me == null or not is_instance_valid(me):
 		carry_group.visible = false
+		prompt.text = ""
 		return
+	_show_prompt(me)
 	# A tub takes priority (you can't hand-stack while hauling one); otherwise
 	# show the hand-stack of plates on its way to the pass.
 	if me.carry_load >= 0:
-		_show_carry(me.carry_load, BusTub.CAPACITY, me.carry_load >= BusTub.CAPACITY - 1)
+		# A tub cannot spill, so its meter stays a fill gauge.
+		_show_carry(me.carry_load, BusTub.CAPACITY,
+			float(me.carry_load) / float(BusTub.CAPACITY),
+			me.carry_load >= BusTub.CAPACITY - 1)
 	elif me.stack_load > 0:
-		_show_carry(me.stack_load, Busser.STACK_MAX, me.stack_load >= Busser.STACK_MAX)
+		# A hand-stack CAN spill, so the meter shows real instability, not fill:
+		# it climbs as you move fast or whip the camera and falls when you settle.
+		_show_carry(me.stack_load, Busser.STACK_MAX, me.wobble, me.wobble >= _WOBBLE_WARN)
 	else:
 		carry_group.visible = false
 
-func _show_carry(count: int, cap: int, heavy: bool) -> void:
+## Contextual verb under the crosshair, so it is always clear what you are
+## aiming at and what the button will do. Reads the local busser's own focus,
+## which it computes from replicated state.
+func _show_prompt(me: Busser) -> void:
+	prompt.text = me.focus_prompt
+	prompt.self_modulate = _RED if me.focus_prompt == "STACK FULL" else _YELLOW
+
+func _show_carry(count: int, cap: int, meter: float, hot: bool) -> void:
 	carry_group.visible = true
 	plates_num.text = "%d / %d" % [count, cap]
-	heavy_label.visible = heavy
-	wobble_bar.value = 15.0 + (float(count) / float(cap)) * 85.0
-	wobble_bar.self_modulate = _RED if heavy else _GREEN
+	heavy_label.visible = hot
+	wobble_bar.value = 15.0 + clampf(meter, 0.0, 1.0) * 85.0
+	wobble_bar.self_modulate = _RED if hot else _GREEN
 
 func _on_tick(seconds_left: float) -> void:
 	time_label.text = "%d:%02d" % [floori(seconds_left / 60.0), int(seconds_left) % 60]

@@ -53,7 +53,7 @@ end, players recover the dirty end:
 | Scoop into tub | Empty-hands grab a tub (two-handed), then grab-aim at a dirty plate to scoop it in (cap 6); slows you, fills your view. | **[AS-BUILT]** |
 | Dump tub at pit | Interact at the dirty counter to tip a loaded tub - plates land AT_PIT. | **[AS-BUILT]** |
 | Run dish machine | Interact at the machine: AT_PIT plates wash on a timer → CLEAN on the clean counter. | **[AS-BUILT]** |
-| Stack in-hand | Multi-plate hand-stacks with growing wobble (greed dial). | **[VISION]** - MVP is single-dish + the tub |
+| Stack in-hand | Multi-plate hand-stacks (cap 5) with growing wobble; max it out and the top plate slides off. | **[AS-BUILT]** - the greed dial is live (§4.6) |
 | Wipe / reset | Rag + place-settings step between messy and READY. | **[VISION]** - MVP: clearing all dishes *is* the reset |
 | Wash (spray) | PowerWash-lite per-dish scrub before the machine. | **[VISION]** (§8.1) |
 | Haul trash / Mop | Dumpster runs, spills, slip hazards. | **[VISION]** - cut from MVP (§7) |
@@ -84,6 +84,15 @@ end, players recover the dirty end:
 - **[VISION]** a **$500 shift goal** as a win bar (the Figma receipt mockup shows `$342.50 / $500`). Not implemented - the HUD currently shows net earnings as a bare number with nothing to hit. Add the constant back to `game_state.gd` when the goal actually gates something.
 - Rating = a 5-star meter that burns one star per walkout; the end-of-shift receipt grades the run (CLEAN / PASSABLE / ROUGH / 86'D).
 - **[VISION]** multi-phase shift (setup → lunch → lull → dinner rush → last call → closing checklist, 12-18 min) and progression unlocks (carts, better tubs, second machine, bigger venues).
+
+### 4.6 Stack Stability - the greed dial - [AS-BUILT]
+- Carrying more is faster but less stable. `Busser.wobble` (0..1) builds from **how much you carry** multiplied by **how violently you move** (horizontal speed + yaw rate), and bleeds off when you settle. At `WOBBLE_MAX` the **top plate slides out of your hands**.
+- The plate is **dropped, not deleted** - it falls with real physics from where you were standing, so it may land safely on a counter or smash on the floor. That ambiguity is the point: the punish is situational, not scripted.
+- **Two plates never wobble at any speed**, and **walking is safe at every stack size**. Every spill is the result of something the player chose to do (sprinting or whipping the camera with a tall stack).
+- Server-authoritative, because it mutates dishes. Motion is measured by **differencing the replicated transform**, not by reading input, so it behaves identically for the host's own busser and a remote client's, and a client cannot lie about how carefully it is moving. Measured speed/turn are clamped (`WOBBLE_MAX_SPEED`/`WOBBLE_MAX_TURN`) so a teleport - the fall-through-floor respawn, or a test harness - cannot register as violent motion and dump the stack.
+- `wobble` is mirrored to the owning peer by RPC for its HUD, the same pattern as `carry_load`. It must never go on the body synchronizer, whose authority is the client.
+- The HUD WOBBLE meter now shows this real value for a hand-stack (it stays a fill gauge for a tub, which cannot spill).
+- Covered by the return-half harness: calm carry does not spill, violent carry does, a single plate never wobbles.
 
 ### 4.5 Escalation / Content Axis - [VISION]
 - Restaurants as levels: Diner (tutorial) → Family Restaurant → Buffet (nightmare) → Fine Dining (fragile, white tablecloths) → Banquet Hall (event mode).
@@ -155,6 +164,11 @@ end, players recover the dirty end:
 | Bus tub capacity | 6 | `BusTub.CAPACITY` |
 | Hand-stack capacity | 5 plates | `Busser.STACK_MAX` (grab to add, grab-away to set down, throw = top plate) |
 | Plate break speed | 6 m/s | `Dish.BREAK_SPEED` |
+| Wobble recover rate | 0.72 /s | `Busser.WOBBLE_RECOVER` |
+| Wobble from speed | 0.15 per m/s | `Busser.WOBBLE_FROM_SPEED` |
+| Wobble from turn | 0.5 per rad/s | `Busser.WOBBLE_FROM_TURN` |
+| Wobble landing kick | 0.3 | `Busser.WOBBLE_LAND_KICK` |
+| Wobble left after a spill | 0.45 | `Busser.WOBBLE_RELIEF` |
 | Cook time / plate | 2.5 s | `KitchenPass.COOK_TIME` |
 | Chef bark interval | 4.5 s | `KitchenPass.BARK_INTERVAL` |
 | SFX voice pool | 24 | `Audio.POOL_SIZE` |
